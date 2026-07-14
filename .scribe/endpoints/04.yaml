@@ -1,0 +1,69 @@
+name: Shipping
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/shipping/estimate
+    metadata:
+      custom: []
+      groupName: Shipping
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Estimate shipping charge'
+      description: |-
+        Returns the shipping charge and ETA for a city/area, matched against configured
+        shipping zones or a flat default rate if no zone matches.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      city:
+        custom: []
+        name: city
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      area:
+        custom: []
+        name: area
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      city: architecto
+      area: architecto
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"charge":120,"eta_days":5}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null

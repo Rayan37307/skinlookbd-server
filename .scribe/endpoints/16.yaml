@@ -1,0 +1,42 @@
+name: 'Admin - Reports'
+description: |-
+
+  Requires the `super-admin` or `order-manager` role.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/admin/reports/export
+    metadata:
+      custom: []
+      groupName: 'Admin - Reports'
+      groupDescription: |-
+
+        Requires the `super-admin` or `order-manager` role.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Export orders as CSV'
+      description: 'Streams a CSV of orders within a date range (`from`/`to`, default: last 30 days).'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

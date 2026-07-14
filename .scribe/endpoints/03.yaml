@@ -1,0 +1,256 @@
+name: Cart
+description: |-
+
+  Works for both guests and authenticated customers. Guests are tracked via an
+  `X-Cart-Token` header: send it back on every request once you've received it
+  from a response, and it merges into the customer's cart automatically on login.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/cart
+    metadata:
+      custom: []
+      groupName: Cart
+      groupDescription: |-
+
+        Works for both guests and authenticated customers. Guests are tracked via an
+        `X-Cart-Token` header: send it back on every request once you've received it
+        from a response, and it merges into the customer's cart automatically on login.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'View cart'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/cart/items
+    metadata:
+      custom: []
+      groupName: Cart
+      groupDescription: |-
+
+        Works for both guests and authenticated customers. Guests are tracked via an
+        `X-Cart-Token` header: send it back on every request once you've received it
+        from a response, and it merges into the customer's cart automatically on login.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Add an item to the cart'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      product_variant_id:
+        custom: []
+        name: product_variant_id
+        description: 'Must match an existing stored value.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      quantity:
+        custom: []
+        name: quantity
+        description: 'Must be at least 1.'
+        required: true
+        example: 22
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      product_variant_id: 16
+      quantity: 22
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PATCH
+    uri: 'api/v1/cart/items/{cartItem_id}'
+    metadata:
+      custom: []
+      groupName: Cart
+      groupDescription: |-
+
+        Works for both guests and authenticated customers. Guests are tracked via an
+        `X-Cart-Token` header: send it back on every request once you've received it
+        from a response, and it merges into the customer's cart automatically on login.
+      subgroup: ''
+      subgroupDescription: ''
+      title: "Update a cart item's quantity"
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      cartItem_id:
+        custom: []
+        name: cartItem_id
+        description: 'The ID of the cartItem.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      cartItem_id: 16
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      quantity:
+        custom: []
+        name: quantity
+        description: 'Must be at least 1.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      quantity: 16
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/v1/cart/items/{cartItem_id}'
+    metadata:
+      custom: []
+      groupName: Cart
+      groupDescription: |-
+
+        Works for both guests and authenticated customers. Guests are tracked via an
+        `X-Cart-Token` header: send it back on every request once you've received it
+        from a response, and it merges into the customer's cart automatically on login.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Remove a cart item'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      cartItem_id:
+        custom: []
+        name: cartItem_id
+        description: 'The ID of the cartItem.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      cartItem_id: 16
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/coupons/validate
+    metadata:
+      custom: []
+      groupName: Cart
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Validate a coupon'
+      description: |-
+        Checks a coupon code against the current cart and returns the discount preview
+        without redeeming it. Redemption happens at checkout.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      code:
+        custom: []
+        name: code
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      code: architecto
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

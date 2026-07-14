@@ -1,0 +1,177 @@
+name: 'Admin - Orders'
+description: |-
+
+  Requires the `super-admin` or `order-manager` role.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/admin/orders
+    metadata:
+      custom: []
+      groupName: 'Admin - Orders'
+      groupDescription: |-
+
+        Requires the `super-admin` or `order-manager` role.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List orders'
+      description: 'Filterable by `status`, `user_id`, and a `from`/`to` date range.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PATCH
+    uri: 'api/v1/admin/orders/{order_id}/status'
+    metadata:
+      custom: []
+      groupName: 'Admin - Orders'
+      groupDescription: |-
+
+        Requires the `super-admin` or `order-manager` role.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update order status'
+      description: |-
+        Enforces the lifecycle: `pending` → `confirmed` → `processing` → `shipped` →
+        `delivered`, with `cancelled` reachable from any pre-shipped state. Marking an
+        order `delivered` also marks a COD payment as `paid`. `returned` is only
+        reachable via the refund endpoint.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      order_id:
+        custom: []
+        name: order_id
+        description: 'The ID of the order.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      order_id: 16
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      status:
+        custom: []
+        name: status
+        description: ''
+        required: true
+        example: shipped
+        type: string
+        enumValues:
+          - confirmed
+          - processing
+          - shipped
+          - delivered
+          - cancelled
+          - returned
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      status: shipped
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/admin/orders/{order_id}/refund'
+    metadata:
+      custom: []
+      groupName: 'Admin - Orders'
+      groupDescription: |-
+
+        Requires the `super-admin` or `order-manager` role.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Refund an order'
+      description: |-
+        Only allowed when the order has a `confirmed` or `paid` payment and is not
+        already `cancelled`/`returned`. Marks the payment `refunded`, restocks
+        inventory, and sets the order status to `returned`.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      order_id:
+        custom: []
+        name: order_id
+        description: 'The ID of the order.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      order_id: 16
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      reason:
+        custom: []
+        name: reason
+        description: 'Must not be greater than 1000 characters.'
+        required: false
+        example: b
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      reason: b
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

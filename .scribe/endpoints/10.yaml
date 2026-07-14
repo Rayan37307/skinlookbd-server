@@ -1,0 +1,133 @@
+name: 'Admin - Inventory'
+description: |-
+
+  Requires the `super-admin` or `catalog-manager` role.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/admin/inventory/adjustments
+    metadata:
+      custom: []
+      groupName: 'Admin - Inventory'
+      groupDescription: |-
+
+        Requires the `super-admin` or `catalog-manager` role.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Adjust stock'
+      description: |-
+        Applies a positive or negative quantity change to a variant's stock and
+        records an `InventoryLog` entry. Rejected with a 422 if it would push stock
+        below zero.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      product_variant_id:
+        custom: []
+        name: product_variant_id
+        description: 'Must match an existing stored value.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      change_quantity:
+        custom: []
+        name: change_quantity
+        description: 'Must not be one of <code>0</code>.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      reason:
+        custom: []
+        name: reason
+        description: ''
+        required: true
+        example: return
+        type: string
+        enumValues:
+          - restock
+          - adjustment
+          - return
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      note:
+        custom: []
+        name: note
+        description: 'Must not be greater than 1000 characters.'
+        required: false
+        example: 'n'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      product_variant_id: 16
+      change_quantity: 16
+      reason: return
+      note: 'n'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/admin/inventory/low-stock
+    metadata:
+      custom: []
+      groupName: 'Admin - Inventory'
+      groupDescription: |-
+
+        Requires the `super-admin` or `catalog-manager` role.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Low-stock report'
+      description: 'Lists variants at or below a stock threshold (default 5), lowest first.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

@@ -1,0 +1,2182 @@
+openapi: 3.0.3
+info:
+  title: 'SkinLookBD API Documentation'
+  description: 'REST API for the SkinLookBD skincare storefront, admin dashboard, and mobile clients.'
+  version: 1.0.0
+servers:
+  - url: 'http://skinlookserver.test'
+tags:
+  - name: Account
+    description: ''
+  - name: 'Admin - Catalog'
+    description: "\nRequires the `super-admin` or `catalog-manager` role."
+  - name: 'Admin - Customers'
+    description: "\nRequires the `super-admin` or `order-manager` role."
+  - name: 'Admin - Dashboard'
+    description: "\nRequires the `super-admin` or `order-manager` role. \"Revenue\" counts orders in\n`confirmed`, `processing`, `shipped`, or `delivered` status only."
+  - name: 'Admin - Inventory'
+    description: "\nRequires the `super-admin` or `catalog-manager` role."
+  - name: 'Admin - Orders'
+    description: "\nRequires the `super-admin` or `order-manager` role."
+  - name: 'Admin - Promotions'
+    description: "\nRequires the `super-admin` or `catalog-manager` role."
+  - name: 'Admin - Reports'
+    description: "\nRequires the `super-admin` or `order-manager` role."
+  - name: 'Admin - Reviews'
+    description: "\nRequires the `super-admin` or `catalog-manager` role."
+  - name: 'Admin - Staff'
+    description: "\nRequires the `super-admin` role."
+  - name: Auth
+    description: ''
+  - name: Cart
+    description: "\nWorks for both guests and authenticated customers. Guests are tracked via an\n`X-Cart-Token` header: send it back on every request once you've received it\nfrom a response, and it merges into the customer's cart automatically on login."
+  - name: Catalog
+    description: ''
+  - name: Checkout
+    description: ''
+  - name: Orders
+    description: ''
+  - name: Payments
+    description: ''
+  - name: Shipping
+    description: ''
+  - name: Wishlist
+    description: ''
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'Obtain a token via <code>POST /api/v1/auth/login</code> or <code>/register</code>, then send it as <code>Authorization: Bearer {token}</code>.'
+security:
+  -
+    default: []
+paths:
+  /api/v1/me:
+    get:
+      summary: 'Get current profile'
+      operationId: getCurrentProfile
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Account
+    patch:
+      summary: 'Update profile'
+      operationId: updateProfile
+      description: "Updates name and/or email. Phone number changes go through the OTP\nverification flow instead and are not editable here."
+      parameters: []
+      responses: {}
+      tags:
+        - Account
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                email:
+                  type: string
+                  description: 'Must be a valid email address. Must not be greater than 255 characters.'
+                  example: zbailey@example.net
+  /api/v1/me/addresses:
+    get:
+      summary: 'List addresses'
+      operationId: listAddresses
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Account
+    post:
+      summary: 'Add an address'
+      operationId: addAnAddress
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                  nullable: true
+                recipient_name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                phone:
+                  type: string
+                  description: 'Must match the regex /^01[3-9]\d{8}$/.'
+                  example: '01864255931'
+                address_line1:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: i
+                address_line2:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: k
+                  nullable: true
+                city:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: h
+                area:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: w
+                  nullable: true
+                postal_code:
+                  type: string
+                  description: 'Must not be greater than 20 characters.'
+                  example: aykcmyuwpwlvqwrs
+                  nullable: true
+                type:
+                  type: string
+                  description: ''
+                  example: billing
+                  enum:
+                    - shipping
+                    - billing
+                is_default:
+                  type: boolean
+                  description: ''
+                  example: false
+              required:
+                - recipient_name
+                - phone
+                - address_line1
+                - city
+                - type
+  '/api/v1/me/addresses/{id}':
+    put:
+      summary: 'Update an address'
+      operationId: updateAnAddress
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Account
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                  nullable: true
+                recipient_name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                phone:
+                  type: string
+                  description: 'Must match the regex /^01[3-9]\d{8}$/.'
+                  example: '01864255931'
+                address_line1:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: i
+                address_line2:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: k
+                  nullable: true
+                city:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: h
+                area:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: w
+                  nullable: true
+                postal_code:
+                  type: string
+                  description: 'Must not be greater than 20 characters.'
+                  example: aykcmyuwpwlvqwrs
+                  nullable: true
+                type:
+                  type: string
+                  description: ''
+                  example: billing
+                  enum:
+                    - shipping
+                    - billing
+                is_default:
+                  type: boolean
+                  description: ''
+                  example: false
+    delete:
+      summary: 'Delete an address'
+      operationId: deleteAnAddress
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Account
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the address.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/categories:
+    get:
+      summary: 'List all categories'
+      operationId: listAllCategories
+      description: 'Unlike the public endpoint, returns every category regardless of active state.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+    post:
+      summary: 'Create a category'
+      operationId: createACategory
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parent_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                  nullable: true
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                slug:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: g
+                  nullable: true
+                description:
+                  type: string
+                  description: ''
+                  example: 'Eius et animi quos velit et.'
+                  nullable: true
+                image:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: v
+                  nullable: true
+                is_active:
+                  type: boolean
+                  description: ''
+                  example: true
+              required:
+                - name
+  '/api/v1/admin/categories/{id}':
+    put:
+      summary: 'Update a category'
+      operationId: updateACategory
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parent_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                  nullable: true
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                slug:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: g
+                description:
+                  type: string
+                  description: ''
+                  example: 'Eius et animi quos velit et.'
+                  nullable: true
+                image:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: v
+                  nullable: true
+                is_active:
+                  type: boolean
+                  description: ''
+                  example: true
+    delete:
+      summary: 'Delete a category'
+      operationId: deleteACategory
+      description: 'Fails with a 422 if the category still has products assigned to it.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the category.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/products:
+    get:
+      summary: 'List all products'
+      operationId: listAllProducts
+      description: 'Unlike the public endpoint, returns products of any status (draft/active/archived).'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+    post:
+      summary: 'Create a product'
+      operationId: createAProduct
+      description: 'Created with `draft` status by default unless `status` is given.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                slug:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: g
+                  nullable: true
+                brand:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: z
+                  nullable: true
+                description:
+                  type: string
+                  description: ''
+                  example: 'Eius et animi quos velit et.'
+                  nullable: true
+                ingredients:
+                  type: string
+                  description: ''
+                  example: architecto
+                  nullable: true
+                base_price:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 39
+                status:
+                  type: string
+                  description: ''
+                  example: archived
+                  enum:
+                    - draft
+                    - active
+                    - archived
+                skin_type_ids:
+                  type: array
+                  description: 'Must match an existing stored value.'
+                  example:
+                    - 16
+                  items:
+                    type: integer
+              required:
+                - category_id
+                - name
+                - base_price
+  '/api/v1/admin/products/{id}':
+    get:
+      summary: 'Get product detail'
+      operationId: getProductDetail
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+    put:
+      summary: 'Update a product'
+      operationId: updateAProduct
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                slug:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: g
+                brand:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: z
+                  nullable: true
+                description:
+                  type: string
+                  description: ''
+                  example: 'Eius et animi quos velit et.'
+                  nullable: true
+                ingredients:
+                  type: string
+                  description: ''
+                  example: architecto
+                  nullable: true
+                base_price:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 39
+                status:
+                  type: string
+                  description: ''
+                  example: active
+                  enum:
+                    - draft
+                    - active
+                    - archived
+                skin_type_ids:
+                  type: array
+                  description: 'Must match an existing stored value.'
+                  example:
+                    - 16
+                  items:
+                    type: integer
+    delete:
+      summary: 'Delete a product'
+      operationId: deleteAProduct
+      description: 'Fails with a 422 if the product has existing orders.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the product.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/v1/admin/products/{product_id}/variants':
+    post:
+      summary: 'Add a variant to a product'
+      operationId: addAVariantToAProduct
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sku:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                size_label:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                price_override:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 84
+                  nullable: true
+                stock_quantity:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 12
+              required:
+                - sku
+                - size_label
+    parameters:
+      -
+        in: path
+        name: product_id
+        description: 'The ID of the product.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/v1/admin/variants/{id}':
+    patch:
+      summary: 'Update a variant'
+      operationId: updateAVariant
+      description: "Stock quantity is not editable here — use the inventory adjustment endpoint\nso every stock change is logged."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sku:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                size_label:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                price_override:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 84
+                  nullable: true
+    delete:
+      summary: 'Delete a variant'
+      operationId: deleteAVariant
+      description: 'Fails with a 422 if the variant has existing orders.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the variant.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/v1/admin/products/{product_id}/images':
+    post:
+      summary: 'Upload product images'
+      operationId: uploadProductImages
+      description: "Accepts multiple images in a single request; each is stored on the `public`\ndisk and appended to the product's gallery in order."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  description: 'Must be an image. Must not be greater than 4096 kilobytes.'
+                  items:
+                    type: string
+                    format: binary
+    parameters:
+      -
+        in: path
+        name: product_id
+        description: 'The ID of the product.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/v1/admin/products/{product_id}/images/{id}':
+    delete:
+      summary: 'Delete a product image'
+      operationId: deleteAProductImage
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Catalog'
+    parameters:
+      -
+        in: path
+        name: product_id
+        description: 'The ID of the product.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: id
+        description: 'The ID of the image.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/customers:
+    get:
+      summary: 'List customers'
+      operationId: listCustomers
+      description: "Searchable by name/email/phone. Each entry includes order count and lifetime\nvalue (sum of `confirmed`+ order totals)."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Customers'
+  '/api/v1/admin/customers/{id}':
+    get:
+      summary: 'Get customer detail'
+      operationId: getCustomerDetail
+      description: 'Profile, lifetime value, and full order history.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Customers'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the customer.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/dashboard/summary:
+    get:
+      summary: Summary
+      operationId: summary
+      description: "Revenue totals for today/this week/this month, order counts by status, and\na low-stock variant count."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Dashboard'
+  /api/v1/admin/dashboard/sales:
+    get:
+      summary: 'Sales time series'
+      operationId: salesTimeSeries
+      description: "Daily revenue and order counts over a date range (`from`/`to`, default: last\n30 days)."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Dashboard'
+  /api/v1/admin/dashboard/top-products:
+    get:
+      summary: 'Top products'
+      operationId: topProducts
+      description: "Best sellers by units sold over an optional date range, limited to `limit`\n(default 10) results."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Dashboard'
+  /api/v1/admin/inventory/adjustments:
+    post:
+      summary: 'Adjust stock'
+      operationId: adjustStock
+      description: "Applies a positive or negative quantity change to a variant's stock and\nrecords an `InventoryLog` entry. Rejected with a 422 if it would push stock\nbelow zero."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Inventory'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_variant_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                change_quantity:
+                  type: integer
+                  description: 'Must not be one of <code>0</code>.'
+                  example: 16
+                reason:
+                  type: string
+                  description: ''
+                  example: return
+                  enum:
+                    - restock
+                    - adjustment
+                    - return
+                note:
+                  type: string
+                  description: 'Must not be greater than 1000 characters.'
+                  example: 'n'
+                  nullable: true
+              required:
+                - product_variant_id
+                - change_quantity
+                - reason
+  /api/v1/admin/inventory/low-stock:
+    get:
+      summary: 'Low-stock report'
+      operationId: lowStockReport
+      description: 'Lists variants at or below a stock threshold (default 5), lowest first.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Inventory'
+  /api/v1/admin/orders:
+    get:
+      summary: 'List orders'
+      operationId: listOrders
+      description: 'Filterable by `status`, `user_id`, and a `from`/`to` date range.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Orders'
+  '/api/v1/admin/orders/{order_id}/status':
+    patch:
+      summary: 'Update order status'
+      operationId: updateOrderStatus
+      description: "Enforces the lifecycle: `pending` → `confirmed` → `processing` → `shipped` →\n`delivered`, with `cancelled` reachable from any pre-shipped state. Marking an\norder `delivered` also marks a COD payment as `paid`. `returned` is only\nreachable via the refund endpoint."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Orders'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: ''
+                  example: shipped
+                  enum:
+                    - confirmed
+                    - processing
+                    - shipped
+                    - delivered
+                    - cancelled
+                    - returned
+              required:
+                - status
+    parameters:
+      -
+        in: path
+        name: order_id
+        description: 'The ID of the order.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/admin/orders/{order_id}/refund':
+    post:
+      summary: 'Refund an order'
+      operationId: refundAnOrder
+      description: "Only allowed when the order has a `confirmed` or `paid` payment and is not\nalready `cancelled`/`returned`. Marks the payment `refunded`, restocks\ninventory, and sets the order status to `returned`."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Orders'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: 'Must not be greater than 1000 characters.'
+                  example: b
+                  nullable: true
+    parameters:
+      -
+        in: path
+        name: order_id
+        description: 'The ID of the order.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/coupons:
+    get:
+      summary: 'List coupons'
+      operationId: listCoupons
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Promotions'
+    post:
+      summary: 'Create a coupon'
+      operationId: createACoupon
+      description: 'The code is normalized to uppercase.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Promotions'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                discount_type:
+                  type: string
+                  description: ''
+                  example: flat
+                  enum:
+                    - percent
+                    - flat
+                discount_value:
+                  type: integer
+                  description: 'Must be at least 1.'
+                  example: 22
+                min_order_value:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 84
+                max_uses:
+                  type: integer
+                  description: 'Must be at least 1.'
+                  example: 66
+                  nullable: true
+                max_uses_per_user:
+                  type: integer
+                  description: 'Must be at least 1.'
+                  example: 27
+                  nullable: true
+                starts_at:
+                  type: string
+                  description: 'Must be a valid date.'
+                  example: '2026-07-14T13:38:15'
+                  nullable: true
+                expires_at:
+                  type: string
+                  description: 'Must be a valid date. Must be a date after <code>starts_at</code>.'
+                  example: '2052-08-06'
+                  nullable: true
+                is_active:
+                  type: boolean
+                  description: ''
+                  example: false
+              required:
+                - code
+                - discount_type
+                - discount_value
+  '/api/v1/admin/coupons/{id}':
+    put:
+      summary: 'Update a coupon'
+      operationId: updateACoupon
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Promotions'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                discount_type:
+                  type: string
+                  description: ''
+                  example: percent
+                  enum:
+                    - percent
+                    - flat
+                discount_value:
+                  type: integer
+                  description: 'Must be at least 1.'
+                  example: 22
+                min_order_value:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 84
+                max_uses:
+                  type: integer
+                  description: 'Must be at least 1.'
+                  example: 66
+                  nullable: true
+                max_uses_per_user:
+                  type: integer
+                  description: 'Must be at least 1.'
+                  example: 27
+                  nullable: true
+                starts_at:
+                  type: string
+                  description: 'Must be a valid date.'
+                  example: '2026-07-14T13:38:15'
+                  nullable: true
+                expires_at:
+                  type: string
+                  description: 'Must be a valid date. Must be a date after <code>starts_at</code>.'
+                  example: '2052-08-06'
+                  nullable: true
+                is_active:
+                  type: boolean
+                  description: ''
+                  example: false
+    delete:
+      summary: 'Delete a coupon'
+      operationId: deleteACoupon
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Promotions'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the coupon.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/banners:
+    get:
+      summary: 'List all banners'
+      operationId: listAllBanners
+      description: "Unlike the public endpoint, returns every banner regardless of active state\nor date window."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Promotions'
+    post:
+      summary: 'Create a banner'
+      operationId: createABanner
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Promotions'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                image:
+                  type: string
+                  format: binary
+                  description: 'Must be an image. Must not be greater than 4096 kilobytes.'
+                link_url:
+                  type: string
+                  description: 'Must not be greater than 2048 characters.'
+                  example: 'http://bailey.com/'
+                  nullable: true
+                sort_order:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 77
+                starts_at:
+                  type: string
+                  description: 'Must be a valid date.'
+                  example: '2026-07-14T13:38:15'
+                  nullable: true
+                expires_at:
+                  type: string
+                  description: 'Must be a valid date. Must be a date after <code>starts_at</code>.'
+                  example: '2052-08-06'
+                  nullable: true
+                is_active:
+                  type: boolean
+                  description: ''
+                  example: true
+              required:
+                - title
+                - image
+  '/api/v1/admin/banners/{id}':
+    put:
+      summary: 'Update a banner'
+      operationId: updateABanner
+      description: 'Sending a new `image` file replaces and deletes the old one.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Promotions'
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                image:
+                  type: string
+                  format: binary
+                  description: 'Must be an image. Must not be greater than 4096 kilobytes.'
+                link_url:
+                  type: string
+                  description: 'Must not be greater than 2048 characters.'
+                  example: 'http://bailey.com/'
+                  nullable: true
+                sort_order:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 77
+                starts_at:
+                  type: string
+                  description: 'Must be a valid date.'
+                  example: '2026-07-14T13:38:15'
+                  nullable: true
+                expires_at:
+                  type: string
+                  description: 'Must be a valid date. Must be a date after <code>starts_at</code>.'
+                  example: '2052-08-06'
+                  nullable: true
+                is_active:
+                  type: boolean
+                  description: ''
+                  example: true
+    delete:
+      summary: 'Delete a banner'
+      operationId: deleteABanner
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Promotions'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the banner.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/reports/export:
+    get:
+      summary: 'Export orders as CSV'
+      operationId: exportOrdersAsCSV
+      description: 'Streams a CSV of orders within a date range (`from`/`to`, default: last 30 days).'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Reports'
+  /api/v1/admin/reviews:
+    get:
+      summary: 'List reviews'
+      operationId: listReviews
+      description: 'Filterable by `status` and `product_id`.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Reviews'
+  '/api/v1/admin/reviews/{review_id}/status':
+    patch:
+      summary: 'Approve or reject a review'
+      operationId: approveOrRejectAReview
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Reviews'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: ''
+                  example: rejected
+                  enum:
+                    - approved
+                    - rejected
+              required:
+                - status
+    parameters:
+      -
+        in: path
+        name: review_id
+        description: 'The ID of the review.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/staff:
+    get:
+      summary: 'List staff accounts'
+      operationId: listStaffAccounts
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Staff'
+    post:
+      summary: 'Create a staff account'
+      operationId: createAStaffAccount
+      description: "Creates a user and assigns exactly one of `super-admin`, `order-manager`, or\n`catalog-manager`."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Staff'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                email:
+                  type: string
+                  description: 'Must be a valid email address. Must not be greater than 255 characters.'
+                  example: zbailey@example.net
+                phone:
+                  type: string
+                  description: 'Must match the regex /^01[3-9]\d{8}$/.'
+                  example: '01864255931'
+                password:
+                  type: string
+                  description: 'Must be at least 8 characters.'
+                  example: 'gxwmi/#iw/'
+                role:
+                  type: string
+                  description: ''
+                  example: super-admin
+                  enum:
+                    - super-admin
+                    - order-manager
+                    - catalog-manager
+              required:
+                - name
+                - email
+                - phone
+                - password
+                - role
+  '/api/v1/admin/staff/{id}':
+    put:
+      summary: 'Update a staff account'
+      operationId: updateAStaffAccount
+      description: "Passing `role` replaces the staff member's current role entirely."
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Staff'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                email:
+                  type: string
+                  description: 'Must be a valid email address. Must not be greater than 255 characters.'
+                  example: zbailey@example.net
+                role:
+                  type: string
+                  description: ''
+                  example: catalog-manager
+                  enum:
+                    - super-admin
+                    - order-manager
+                    - catalog-manager
+    delete:
+      summary: 'Delete a staff account'
+      operationId: deleteAStaffAccount
+      description: 'You cannot delete your own account.'
+      parameters: []
+      responses: {}
+      tags:
+        - 'Admin - Staff'
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the staff.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/auth/register:
+    post:
+      summary: Register
+      operationId: register
+      description: "Create a customer account and receive a Sanctum token. If an `X-Cart-Token`\nheader is sent, the matching guest cart is merged into the new account."
+      parameters: []
+      responses: {}
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                email:
+                  type: string
+                  description: 'Must be a valid email address. Must not be greater than 255 characters.'
+                  example: zbailey@example.net
+                phone:
+                  type: string
+                  description: 'Must match the regex /^01[3-9]\d{8}$/.'
+                  example: '01864255931'
+                password:
+                  type: string
+                  description: 'Must be at least 8 characters.'
+                  example: 'gxwmi/#iw/'
+              required:
+                - name
+                - email
+                - phone
+                - password
+      security: []
+  /api/v1/auth/login:
+    post:
+      summary: Login
+      operationId: login
+      description: "Authenticate with an email or phone number and password, receiving a Sanctum\ntoken. If an `X-Cart-Token` header is sent, the matching guest cart is merged\ninto the account."
+      parameters: []
+      responses: {}
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  description: ''
+                  example: architecto
+                password:
+                  type: string
+                  description: ''
+                  example: '|]|{+-'
+              required:
+                - login
+                - password
+      security: []
+  /api/v1/auth/forgot-password:
+    post:
+      summary: 'Request a password reset link'
+      operationId: requestAPasswordResetLink
+      description: "Sends a password reset email if the address exists. Always returns a generic\nsuccess message regardless of whether the email is registered."
+      parameters: []
+      responses: {}
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: gbailey@example.net
+              required:
+                - email
+      security: []
+  /api/v1/auth/reset-password:
+    post:
+      summary: 'Reset password'
+      operationId: resetPassword
+      description: 'Completes a password reset using the token from the emailed link.'
+      parameters: []
+      responses: {}
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: ''
+                  example: architecto
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: zbailey@example.net
+                password:
+                  type: string
+                  description: 'Must be at least 8 characters.'
+                  example: '-0pBNvYgxw'
+              required:
+                - token
+                - email
+                - password
+      security: []
+  /api/v1/auth/otp/send:
+    post:
+      summary: 'Send phone OTP'
+      operationId: sendPhoneOTP
+      description: 'Generates a 6-digit code (valid 5 minutes) and dispatches it by SMS.'
+      parameters: []
+      responses: {}
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: 'Must match the regex /^01[3-9]\d{8}$/.'
+                  example: '01864255931'
+              required:
+                - phone
+      security: []
+  /api/v1/auth/otp/verify:
+    post:
+      summary: 'Verify phone OTP'
+      operationId: verifyPhoneOTP
+      description: "Confirms the code sent to a phone number and marks it verified. Locks after\n5 incorrect attempts."
+      parameters: []
+      responses: {}
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: 'Must match the regex /^01[3-9]\d{8}$/.'
+                  example: '01864255931'
+                code:
+                  type: string
+                  description: 'Must be 6 characters.'
+                  example: ikhway
+              required:
+                - phone
+                - code
+      security: []
+  /api/v1/auth/logout:
+    post:
+      summary: Logout
+      operationId: logout
+      description: 'Revoke the bearer token used for this request.'
+      parameters: []
+      responses: {}
+      tags:
+        - Auth
+  /api/v1/cart:
+    get:
+      summary: 'View cart'
+      operationId: viewCart
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Cart
+      security: []
+  /api/v1/cart/items:
+    post:
+      summary: 'Add an item to the cart'
+      operationId: addAnItemToTheCart
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_variant_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                quantity:
+                  type: integer
+                  description: 'Must be at least 1.'
+                  example: 22
+              required:
+                - product_variant_id
+                - quantity
+      security: []
+  '/api/v1/cart/items/{cartItem_id}':
+    patch:
+      summary: "Update a cart item's quantity"
+      operationId: updateACartItemsQuantity
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  description: 'Must be at least 1.'
+                  example: 16
+              required:
+                - quantity
+      security: []
+    delete:
+      summary: 'Remove a cart item'
+      operationId: removeACartItem
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Cart
+      security: []
+    parameters:
+      -
+        in: path
+        name: cartItem_id
+        description: 'The ID of the cartItem.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/coupons/validate:
+    post:
+      summary: 'Validate a coupon'
+      operationId: validateACoupon
+      description: "Checks a coupon code against the current cart and returns the discount preview\nwithout redeeming it. Redemption happens at checkout."
+      parameters: []
+      responses: {}
+      tags:
+        - Cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: ''
+                  example: architecto
+              required:
+                - code
+  /api/v1/categories:
+    get:
+      summary: 'List categories'
+      operationId: listCategories
+      description: 'Returns active top-level categories with their active children nested.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  categories:
+                    -
+                      id: 9
+                      name: 'Hair Care'
+                      slug: hair-care
+                      description: null
+                      image: null
+                      children:
+                        -
+                          id: 10
+                          name: Shampoos
+                          slug: shampoos
+                          description: null
+                          image: null
+                        -
+                          id: 11
+                          name: Conditioners
+                          slug: conditioners
+                          description: null
+                          image: null
+                        -
+                          id: 12
+                          name: 'Hair Oils'
+                          slug: hair-oils
+                          description: null
+                          image: null
+                    -
+                      id: 1
+                      name: Skincare
+                      slug: skincare
+                      description: null
+                      image: null
+                      children:
+                        -
+                          id: 2
+                          name: Cleansers
+                          slug: cleansers
+                          description: null
+                          image: null
+                        -
+                          id: 3
+                          name: Toners
+                          slug: toners
+                          description: null
+                          image: null
+                        -
+                          id: 4
+                          name: Serums
+                          slug: serums
+                          description: null
+                          image: null
+                        -
+                          id: 5
+                          name: Moisturizers
+                          slug: moisturizers
+                          description: null
+                          image: null
+                    -
+                      id: 6
+                      name: 'Sun Care'
+                      slug: sun-care
+                      description: null
+                      image: null
+                      children:
+                        -
+                          id: 7
+                          name: Sunscreens
+                          slug: sunscreens
+                          description: null
+                          image: null
+                        -
+                          id: 8
+                          name: 'After Sun'
+                          slug: after-sun
+                          description: null
+                          image: null
+                properties:
+                  categories:
+                    type: array
+                    example:
+                      -
+                        id: 9
+                        name: 'Hair Care'
+                        slug: hair-care
+                        description: null
+                        image: null
+                        children:
+                          - id: 10
+                            name: Shampoos
+                            slug: shampoos
+                            description: null
+                            image: null
+                          - id: 11
+                            name: Conditioners
+                            slug: conditioners
+                            description: null
+                            image: null
+                          - id: 12
+                            name: 'Hair Oils'
+                            slug: hair-oils
+                            description: null
+                            image: null
+                      -
+                        id: 1
+                        name: Skincare
+                        slug: skincare
+                        description: null
+                        image: null
+                        children:
+                          - id: 2
+                            name: Cleansers
+                            slug: cleansers
+                            description: null
+                            image: null
+                          - id: 3
+                            name: Toners
+                            slug: toners
+                            description: null
+                            image: null
+                          - id: 4
+                            name: Serums
+                            slug: serums
+                            description: null
+                            image: null
+                          - id: 5
+                            name: Moisturizers
+                            slug: moisturizers
+                            description: null
+                            image: null
+                      -
+                        id: 6
+                        name: 'Sun Care'
+                        slug: sun-care
+                        description: null
+                        image: null
+                        children:
+                          - id: 7
+                            name: Sunscreens
+                            slug: sunscreens
+                            description: null
+                            image: null
+                          - id: 8
+                            name: 'After Sun'
+                            slug: after-sun
+                            description: null
+                            image: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 9
+                        name:
+                          type: string
+                          example: 'Hair Care'
+                        slug:
+                          type: string
+                          example: hair-care
+                        description:
+                          type: string
+                          example: null
+                          nullable: true
+                        image:
+                          type: string
+                          example: null
+                          nullable: true
+                        children:
+                          type: array
+                          example:
+                            - id: 10
+                              name: Shampoos
+                              slug: shampoos
+                              description: null
+                              image: null
+                            - id: 11
+                              name: Conditioners
+                              slug: conditioners
+                              description: null
+                              image: null
+                            - id: 12
+                              name: 'Hair Oils'
+                              slug: hair-oils
+                              description: null
+                              image: null
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                example: 10
+                              name:
+                                type: string
+                                example: Shampoos
+                              slug:
+                                type: string
+                                example: shampoos
+                              description:
+                                type: string
+                                example: null
+                                nullable: true
+                              image:
+                                type: string
+                                example: null
+                                nullable: true
+      tags:
+        - Catalog
+      security: []
+  /api/v1/banners:
+    get:
+      summary: 'List homepage banners'
+      operationId: listHomepageBanners
+      description: "Returns active banners currently within their start/expiry window, ordered\nby sort order."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  banners: []
+                properties:
+                  banners:
+                    type: array
+                    example: []
+      tags:
+        - Catalog
+      security: []
+  /api/v1/products:
+    get:
+      summary: 'List / search products'
+      operationId: listSearchProducts
+      description: 'Browse active products with filtering, search, sorting, and pagination.'
+      parameters: []
+      responses:
+        422:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'The max price field must be greater than or equal to 39.'
+                  errors:
+                    max_price:
+                      - 'The max price field must be greater than or equal to 39.'
+                properties:
+                  message:
+                    type: string
+                    example: 'The max price field must be greater than or equal to 39.'
+                  errors:
+                    type: object
+                    properties:
+                      max_price:
+                        type: array
+                        example:
+                          - 'The max price field must be greater than or equal to 39.'
+                        items:
+                          type: string
+      tags:
+        - Catalog
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+                  description: ''
+                  example: architecto
+                skin_type:
+                  type: string
+                  description: ''
+                  example: architecto
+                min_price:
+                  type: integer
+                  description: 'Must be at least 0.'
+                  example: 39
+                max_price:
+                  type: integer
+                  description: ''
+                  example: 16
+                in_stock:
+                  type: boolean
+                  description: ''
+                  example: true
+                search:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                sort:
+                  type: string
+                  description: ''
+                  example: price_desc
+                  enum:
+                    - price_asc
+                    - price_desc
+                    - newest
+                per_page:
+                  type: integer
+                  description: 'Must be at least 1. Must not be greater than 100.'
+                  example: 7
+      security: []
+  '/api/v1/products/{slug}':
+    get:
+      summary: 'Get product detail'
+      operationId: getProductDetail
+      description: 'Returns full detail (images, variants, skin types) for a single active product by slug.'
+      parameters: []
+      responses:
+        404:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No query results for model [App\Models\Product].'
+                properties:
+                  message:
+                    type: string
+                    example: 'No query results for model [App\Models\Product].'
+      tags:
+        - Catalog
+      security: []
+    parameters:
+      -
+        in: path
+        name: slug
+        description: 'The slug of the product.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/products/{product_id}/reviews':
+    get:
+      summary: 'List product reviews'
+      operationId: listProductReviews
+      description: 'Returns only approved reviews for a product.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  reviews: []
+                  meta:
+                    current_page: 1
+                    last_page: 1
+                    total: 0
+                properties:
+                  reviews:
+                    type: array
+                    example: []
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      total:
+                        type: integer
+                        example: 0
+      tags:
+        - Catalog
+      security: []
+    post:
+      summary: 'Submit a product review'
+      operationId: submitAProductReview
+      description: "Requires the customer to have a non-cancelled order containing this product.\nOne review per product per customer; created with `pending` status pending\nadmin moderation."
+      parameters: []
+      responses: {}
+      tags:
+        - Catalog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  description: 'Must be between 1 and 5.'
+                  example: 2
+                title:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: 'n'
+                  nullable: true
+                body:
+                  type: string
+                  description: 'Must not be greater than 2000 characters.'
+                  example: g
+                  nullable: true
+              required:
+                - rating
+    parameters:
+      -
+        in: path
+        name: product_id
+        description: 'The ID of the product.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/checkout:
+    post:
+      summary: 'Place an order'
+      operationId: placeAnOrder
+      description: "Validates stock, applies an optional coupon, computes the shipping charge for\nthe chosen address, and atomically creates the order, order items, and payment\nrecord, decrementing variant stock and clearing the cart."
+      parameters: []
+      responses: {}
+      tags:
+        - Checkout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                payment_method:
+                  type: string
+                  description: ''
+                  example: cod
+                  enum:
+                    - cod
+                coupon_code:
+                  type: string
+                  description: ''
+                  example: architecto
+                  nullable: true
+                notes:
+                  type: string
+                  description: 'Must not be greater than 1000 characters.'
+                  example: 'n'
+                  nullable: true
+              required:
+                - address_id
+                - payment_method
+  /api/v1/orders:
+    get:
+      summary: 'List my orders'
+      operationId: listMyOrders
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Orders
+  '/api/v1/orders/{id}':
+    get:
+      summary: 'Get order detail'
+      operationId: getOrderDetail
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Orders
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the order.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/orders/{order_id}/cancel':
+    post:
+      summary: 'Cancel an order'
+      operationId: cancelAnOrder
+      description: "Only allowed while the order is `pending` or `confirmed`. Restocks the\nreserved inventory."
+      parameters: []
+      responses: {}
+      tags:
+        - Orders
+    parameters:
+      -
+        in: path
+        name: order_id
+        description: 'The ID of the order.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/payments/cod/confirm:
+    post:
+      summary: 'Confirm a Cash-on-Delivery order'
+      operationId: confirmACashOnDeliveryOrder
+      description: "Marks a pending COD order (and its payment record) as confirmed, typically\nafter a staff member has phoned the customer to verify the order. Restricted\nto `super-admin` and `order-manager` roles."
+      parameters: []
+      responses: {}
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+              required:
+                - order_id
+  /api/v1/shipping/estimate:
+    get:
+      summary: 'Estimate shipping charge'
+      operationId: estimateShippingCharge
+      description: "Returns the shipping charge and ETA for a city/area, matched against configured\nshipping zones or a flat default rate if no zone matches."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  charge: 120
+                  eta_days: 5
+                properties:
+                  charge:
+                    type: integer
+                    example: 120
+                  eta_days:
+                    type: integer
+                    example: 5
+      tags:
+        - Shipping
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                city:
+                  type: string
+                  description: ''
+                  example: architecto
+                area:
+                  type: string
+                  description: ''
+                  example: architecto
+                  nullable: true
+              required:
+                - city
+      security: []
+  /api/v1/wishlist:
+    get:
+      summary: 'List my wishlist'
+      operationId: listMyWishlist
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Wishlist
+    post:
+      summary: 'Add a product to the wishlist'
+      operationId: addAProductToTheWishlist
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Wishlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+              required:
+                - product_id
+  '/api/v1/wishlist/{product_id}':
+    delete:
+      summary: 'Remove a product from the wishlist'
+      operationId: removeAProductFromTheWishlist
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Wishlist
+    parameters:
+      -
+        in: path
+        name: product_id
+        description: 'The ID of the product.'
+        example: 1
+        required: true
+        schema:
+          type: integer

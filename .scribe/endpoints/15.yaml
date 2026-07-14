@@ -1,0 +1,93 @@
+name: 'Admin - Customers'
+description: |-
+
+  Requires the `super-admin` or `order-manager` role.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/admin/customers
+    metadata:
+      custom: []
+      groupName: 'Admin - Customers'
+      groupDescription: |-
+
+        Requires the `super-admin` or `order-manager` role.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List customers'
+      description: |-
+        Searchable by name/email/phone. Each entry includes order count and lifetime
+        value (sum of `confirmed`+ order totals).
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/admin/customers/{id}'
+    metadata:
+      custom: []
+      groupName: 'Admin - Customers'
+      groupDescription: |-
+
+        Requires the `super-admin` or `order-manager` role.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get customer detail'
+      description: 'Profile, lifetime value, and full order history.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_SANCTUM_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the customer.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
