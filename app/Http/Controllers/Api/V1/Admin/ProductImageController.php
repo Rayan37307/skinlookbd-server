@@ -7,7 +7,6 @@ use App\Http\Requests\Admin\StoreProductImagesRequest;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @group Admin - Catalog
@@ -53,7 +52,6 @@ class ProductImageController extends Controller
     {
         abort_unless($image->product_id === $product->id, 404);
 
-        Storage::disk('public')->delete($image->path);
         $image->delete();
 
         return response()->json(['message' => 'Image deleted.']);

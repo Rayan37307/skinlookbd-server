@@ -7,12 +7,20 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['title', 'image', 'link_url', 'sort_order', 'starts_at', 'expires_at', 'is_active'])]
 class Banner extends Model
 {
     /** @use HasFactory<BannerFactory> */
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Banner $banner) {
+            Storage::disk('public')->delete($banner->image);
+        });
+    }
 
     /**
      * @return array<string, string>

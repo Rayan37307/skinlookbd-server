@@ -71,7 +71,6 @@ class BannerController extends Controller
      */
     public function destroy(Banner $banner): JsonResponse
     {
-        Storage::disk('public')->delete($banner->image);
         $banner->delete();
 
         return response()->json(['message' => 'Banner deleted.']);
