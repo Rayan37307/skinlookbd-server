@@ -59,7 +59,9 @@ php artisan scribe:generate
 
 ## Deployment (shared hosting)
 
-No Octane, no standalone Redis — cache and queue both use the `database` driver. On every deploy:
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the full walkthrough (document root layout,
+`.env`, cron, troubleshooting). Summary: no Octane, no standalone Redis — cache and queue both use
+the `database` driver. On every deploy:
 
 ```bash
 php artisan migrate --force
