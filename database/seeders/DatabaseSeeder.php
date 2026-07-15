@@ -23,8 +23,6 @@ class DatabaseSeeder extends Seeder
             ShippingZoneSeeder::class,
         ]);
 
-        // User::factory(10)->create();
-
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -36,5 +34,15 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
             'phone' => '01700000001',
         ])->assignRole('super-admin');
+
+        $this->call([
+            StaffSeeder::class,
+            CustomerSeeder::class,
+            CouponSeeder::class,
+            BannerSeeder::class,
+            OrderSeeder::class,
+            ReviewSeeder::class,
+            WishlistSeeder::class,
+        ]);
     }
 }
