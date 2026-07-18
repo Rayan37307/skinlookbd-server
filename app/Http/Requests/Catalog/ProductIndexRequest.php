@@ -24,7 +24,10 @@ class ProductIndexRequest extends FormRequest
     {
         return [
             'category' => ['sometimes', 'string'],
+            'subcategory' => ['sometimes', 'string'],
             'skin_type' => ['sometimes', 'string'],
+            'tag' => ['sometimes', 'string'],
+            'label' => ['sometimes', 'string'],
             'min_price' => ['sometimes', 'integer', 'min:0'],
             'max_price' => ['sometimes', 'integer', 'gte:min_price'],
             'in_stock' => ['sometimes', 'boolean'],

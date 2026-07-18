@@ -21,6 +21,8 @@ use Illuminate\Support\Str;
  */
 class ProductController extends Controller
 {
+    private const WITH = ['category.parent', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts'];
+
     /**
      * List all products
      *
@@ -28,7 +30,7 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Product::with(['category', 'images', 'variants']);
+        $query = Product::with(self::WITH);
 
         if ($status = $request->string('status')->value()) {
             $query->where('status', $status);
@@ -63,17 +65,15 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request): JsonResponse
     {
         $product = Product::create([
-            ...$request->safe()->except('skin_type_ids'),
+            ...$request->safe()->except(['skin_type_ids', 'tag_ids', 'label_ids', 'related_product_ids']),
             'slug' => $request->string('slug')->value() ?: Str::slug($request->string('name')->value()),
             'status' => $request->string('status')->value() ?: 'draft',
         ]);
 
-        if ($request->has('skin_type_ids')) {
-            $product->skinTypes()->sync($request->input('skin_type_ids'));
-        }
+        $this->syncRelations($request, $product);
 
         return response()->json([
-            'product' => new AdminProductResource($product->load('category', 'images', 'variants', 'skinTypes')),
+            'product' => new AdminProductResource($product->load(self::WITH)),
         ], 201);
     }
 
@@ -83,7 +83,7 @@ class ProductController extends Controller
     public function show(Product $product): JsonResponse
     {
         return response()->json([
-            'product' => new AdminProductResource($product->load('category', 'images', 'variants', 'skinTypes')),
+            'product' => new AdminProductResource($product->load(self::WITH)),
         ]);
     }
 
@@ -92,15 +92,35 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
-        $product->update($request->safe()->except('skin_type_ids'));
+        $product->update($request->safe()->except(['skin_type_ids', 'tag_ids', 'label_ids', 'related_product_ids']));
 
+        $this->syncRelations($request, $product);
+
+        return response()->json([
+            'product' => new AdminProductResource($product->load(self::WITH)),
+        ]);
+    }
+
+    /**
+     * @param  StoreProductRequest|UpdateProductRequest  $request
+     */
+    protected function syncRelations($request, Product $product): void
+    {
         if ($request->has('skin_type_ids')) {
             $product->skinTypes()->sync($request->input('skin_type_ids'));
         }
 
-        return response()->json([
-            'product' => new AdminProductResource($product->load('category', 'images', 'variants', 'skinTypes')),
-        ]);
+        if ($request->has('tag_ids')) {
+            $product->tags()->sync($request->input('tag_ids'));
+        }
+
+        if ($request->has('label_ids')) {
+            $product->labels()->sync($request->input('label_ids'));
+        }
+
+        if ($request->has('related_product_ids')) {
+            $product->relatedProducts()->sync($request->input('related_product_ids'));
+        }
     }
 
     /**

@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Database\Factories\CartItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable(['product_variant_id', 'quantity'])]
+#[Touches(['cart'])]
 class CartItem extends Model
 {
     /** @use HasFactory<CartItemFactory> */

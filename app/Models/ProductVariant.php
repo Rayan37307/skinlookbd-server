@@ -28,7 +28,7 @@ class ProductVariant extends Model
      */
     protected function price(): Attribute
     {
-        return Attribute::get(fn () => $this->price_override ?? $this->product->base_price);
+        return Attribute::get(fn () => $this->price_override ?? $this->product->effectivePrice());
     }
 
     public function inStock(): bool

@@ -25,10 +25,17 @@ class ProductFactory extends Factory
             'category_id' => Category::factory(),
             'name' => ucwords($name),
             'slug' => Str::slug($name),
+            'sku' => strtoupper(Str::random(8)),
             'brand' => fake()->company(),
+            'short_description' => fake()->sentence(12),
             'description' => fake()->paragraph(),
             'ingredients' => fake()->sentence(10),
             'base_price' => fake()->numberBetween(250, 3500),
+            'track_inventory' => true,
+            'stock_quantity' => fake()->numberBetween(0, 200),
+            'free_shipping' => fake()->boolean(20),
+            'meta_title' => ucwords($name),
+            'meta_description' => fake()->sentence(15),
             'status' => 'active',
         ];
     }
@@ -36,5 +43,12 @@ class ProductFactory extends Factory
     public function draft(): static
     {
         return $this->state(fn (array $attributes) => ['status' => 'draft']);
+    }
+
+    public function onSale(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'sale_price' => (int) round($attributes['base_price'] * 0.8),
+        ]);
     }
 }

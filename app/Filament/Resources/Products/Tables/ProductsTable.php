@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -20,8 +21,12 @@ class ProductsTable
     {
         return $table
             ->columns([
-                TextColumn::make('category.name')
+                TextColumn::make('category.parent.name')
                     ->label('Category')
+                    ->getStateUsing(fn ($record) => ($record->category?->parent ?? $record->category)?->name)
+                    ->searchable(),
+                TextColumn::make('category.name')
+                    ->label('Subcategory')
                     ->searchable(),
                 TextColumn::make('name')
                     ->searchable(),
@@ -30,11 +35,22 @@ class ProductsTable
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('base_price')
                     ->label('Price')
-                    ->formatStateUsing(fn (int $state) => '৳'.number_format($state))
+                    ->formatStateUsing(fn ($record) => $record->isOnSale()
+                        ? '<s>৳'.number_format($record->base_price).'</s> ৳'.number_format($record->sale_price)
+                        : '৳'.number_format($record->base_price))
+                    ->html()
                     ->sortable(),
                 TextColumn::make('variants_count')
                     ->label('Variants')
                     ->counts('variants'),
+                IconColumn::make('stock_status')
+                    ->label('In stock')
+                    ->getStateUsing(fn ($record) => $record->isInStock())
+                    ->boolean(),
+                TextColumn::make('labels.name')
+                    ->label('Labels')
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
@@ -61,6 +77,12 @@ class ProductsTable
                 SelectFilter::make('category_id')
                     ->label('Category')
                     ->options(fn () => Category::query()->orderBy('name')->pluck('name', 'id')),
+                SelectFilter::make('tags')
+                    ->label('Tag')
+                    ->relationship('tags', 'name'),
+                SelectFilter::make('labels')
+                    ->label('Marketing label')
+                    ->relationship('labels', 'name'),
             ])
             ->recordActions([
                 ViewAction::make(),

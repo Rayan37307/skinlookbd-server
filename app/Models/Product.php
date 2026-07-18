@@ -11,11 +11,30 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['category_id', 'name', 'slug', 'brand', 'description', 'ingredients', 'base_price', 'status'])]
+#[Fillable([
+    'category_id', 'name', 'slug', 'sku', 'brand', 'description', 'short_description', 'ingredients',
+    'additional_information', 'base_price', 'sale_price', 'cost_price', 'status', 'track_inventory',
+    'stock_quantity', 'free_shipping', 'meta_title', 'meta_description', 'focus_keyword', 'canonical_url',
+])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'sale_price' => 'integer',
+            'cost_price' => 'integer',
+            'track_inventory' => 'boolean',
+            'stock_quantity' => 'integer',
+            'free_shipping' => 'boolean',
+            'additional_information' => 'array',
+        ];
+    }
 
     /**
      * @return BelongsTo<Category, $this>
@@ -50,6 +69,79 @@ class Product extends Model
     }
 
     /**
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    /**
+     * @return BelongsToMany<Label, $this>
+     */
+    public function labels(): BelongsToMany
+    {
+        return $this->belongsToMany(Label::class, 'product_label');
+    }
+
+    /**
+     * @return BelongsToMany<Product, $this>
+     */
+    public function relatedProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'related_products', 'product_id', 'related_product_id');
+    }
+
+    /**
+     * The effective selling price: the active sale price if set, otherwise the regular price.
+     */
+    public function effectivePrice(): int
+    {
+        return $this->sale_price ?? $this->base_price;
+    }
+
+    public function isOnSale(): bool
+    {
+        return $this->sale_price !== null && $this->sale_price < $this->base_price;
+    }
+
+    public function hasVariants(): bool
+    {
+        return $this->variants->isNotEmpty();
+    }
+
+    /**
+     * Variant stock takes priority when the product has variants; otherwise falls back to the
+     * product's own stock_quantity/track_inventory.
+     */
+    public function isInStock(): bool
+    {
+        if ($this->hasVariants()) {
+            return $this->variants->contains(fn (ProductVariant $variant) => $variant->inStock());
+        }
+
+        return ! $this->track_inventory || $this->stock_quantity > 0;
+    }
+
+    /**
+     * The top-level category, resolved from the assigned category's parent when it's a subcategory.
+     * Assumes `category.parent` is eager loaded.
+     */
+    public function topCategory(): Category
+    {
+        return $this->category->parent_id ? $this->category->parent : $this->category;
+    }
+
+    /**
+     * The specific subcategory, or null if the assigned category has no parent.
+     * Assumes `category.parent` is eager loaded.
+     */
+    public function subcategoryOrNull(): ?Category
+    {
+        return $this->category->parent_id ? $this->category : null;
+    }
+
+    /**
      * @return HasMany<Review, $this>
      */
     public function reviews(): HasMany
@@ -72,6 +164,15 @@ class Product extends Model
      */
     public function scopeInStock(Builder $query): Builder
     {
-        return $query->whereHas('variants', fn (Builder $variants) => $variants->where('stock_quantity', '>', 0));
+        return $query->where(function (Builder $q) {
+            $q->whereHas('variants', fn (Builder $variants) => $variants->where('stock_quantity', '>', 0))
+                ->orWhere(function (Builder $q2) {
+                    $q2->doesntHave('variants')
+                        ->where(function (Builder $q3) {
+                            $q3->where('track_inventory', false)
+                                ->orWhere('stock_quantity', '>', 0);
+                        });
+                });
+        });
     }
 }

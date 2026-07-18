@@ -22,7 +22,7 @@ class ProductController extends Controller
      */
     public function index(ProductIndexRequest $request): JsonResponse
     {
-        $query = Product::active()->with(['category', 'images', 'variants']);
+        $query = Product::active()->with(['category.parent', 'images', 'variants', 'tags', 'labels']);
 
         if ($category = $request->string('category')->value()) {
             $matchedCategory = Category::where('slug', $category)->first();
@@ -34,8 +34,20 @@ class ProductController extends Controller
             $query->whereIn('category_id', $categoryIds);
         }
 
+        if ($subcategory = $request->string('subcategory')->value()) {
+            $query->whereHas('category', fn ($q) => $q->where('slug', $subcategory));
+        }
+
         if ($skinType = $request->string('skin_type')->value()) {
             $query->whereHas('skinTypes', fn ($q) => $q->where('slug', $skinType));
+        }
+
+        if ($tag = $request->string('tag')->value()) {
+            $query->whereHas('tags', fn ($q) => $q->where('slug', $tag));
+        }
+
+        if ($label = $request->string('label')->value()) {
+            $query->whereHas('labels', fn ($q) => $q->where('slug', $label));
         }
 
         if ($request->filled('min_price')) {
@@ -77,12 +89,12 @@ class ProductController extends Controller
     /**
      * Get product detail
      *
-     * Returns full detail (images, variants, skin types) for a single active product by slug.
+     * Returns full detail (images, variants, skin types, tags) for a single active product by slug.
      */
     public function show(string $slug): JsonResponse
     {
         $product = Product::active()
-            ->with(['category', 'images', 'variants', 'skinTypes'])
+            ->with(['category.parent', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts.category.parent', 'relatedProducts.variants', 'relatedProducts.images'])
             ->where('slug', $slug)
             ->firstOrFail();
 

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['path', 'alt', 'sort_order'])]
+#[Fillable(['type', 'path', 'alt', 'sort_order'])]
 class ProductImage extends Model
 {
     /** @use HasFactory<ProductImageFactory> */
@@ -18,7 +18,9 @@ class ProductImage extends Model
     protected static function booted(): void
     {
         static::deleting(function (ProductImage $image) {
-            Storage::disk('public')->delete($image->path);
+            if ($image->type === 'image') {
+                Storage::disk('public')->delete($image->path);
+            }
         });
     }
 

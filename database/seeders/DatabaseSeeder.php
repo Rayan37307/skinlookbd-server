@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             CategorySeeder::class,
             SkinTypeSeeder::class,
+            TagSeeder::class,
+            LabelSeeder::class,
             ProductSeeder::class,
             ShippingZoneSeeder::class,
         ]);

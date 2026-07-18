@@ -11,3 +11,5 @@ Artisan::command('inspire', function () {
 // Shared hosting has no long-running queue worker, so the cron-driven scheduler
 // (`* * * * * php artisan schedule:run`) drains the queue once per minute instead.
 Schedule::command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
+
+Schedule::command('carts:send-abandoned-reminders')->hourly()->withoutOverlapping();

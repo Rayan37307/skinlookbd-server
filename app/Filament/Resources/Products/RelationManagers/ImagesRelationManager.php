@@ -6,12 +6,14 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class ImagesRelationManager extends RelationManager
 {
@@ -21,12 +23,26 @@ class ImagesRelationManager extends RelationManager
     {
         return $schema
             ->components([
+                Select::make('type')
+                    ->options([
+                        'image' => 'Image',
+                        'video' => 'Video',
+                    ])
+                    ->default('image')
+                    ->live()
+                    ->required(),
                 FileUpload::make('path')
                     ->label('Image')
                     ->image()
                     ->disk('public')
                     ->directory('products')
-                    ->required(),
+                    ->visible(fn (Get $get) => $get('type') === 'image')
+                    ->required(fn (Get $get) => $get('type') === 'image'),
+                TextInput::make('path')
+                    ->label('Video URL')
+                    ->url()
+                    ->visible(fn (Get $get) => $get('type') === 'video')
+                    ->required(fn (Get $get) => $get('type') === 'video'),
                 TextInput::make('alt')
                     ->label('Alt text')
                     ->maxLength(255),
@@ -44,9 +60,14 @@ class ImagesRelationManager extends RelationManager
             ->reorderable('sort_order')
             ->defaultSort('sort_order')
             ->columns([
-                ImageColumn::make('path')
-                    ->label('Image')
-                    ->disk('public'),
+                TextColumn::make('type')
+                    ->badge(),
+                TextColumn::make('path')
+                    ->label('Media')
+                    ->formatStateUsing(fn ($record) => $record->type === 'video' ? $record->path : basename($record->path))
+                    ->url(fn ($record) => $record->type === 'video' ? $record->path : Storage::disk('public')->url($record->path))
+                    ->openUrlInNewTab()
+                    ->limit(40),
                 TextColumn::make('alt')
                     ->label('Alt text')
                     ->searchable(),
