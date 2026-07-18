@@ -72,7 +72,7 @@ endpoints:
       -
         custom: []
         status: 200
-        content: '{"banners":[]}'
+        content: '{"banners":[{"id":1,"title":"New Arrivals: Korean Skincare","image":"banners\/7acd3682-9bc2-3979-a1e4-c080ceaca1af.jpg","link_url":"http:\/\/www.wolff.net\/","sort_order":0,"starts_at":null,"expires_at":null,"is_active":true},{"id":2,"title":"Sunscreen Season \u2014 Up to 20% Off","image":"banners\/afa49f88-2b04-37d9-be58-985123b7b470.jpg","link_url":"http:\/\/www.boyle.com\/distinctio-aut-corporis-voluptas-harum.html","sort_order":1,"starts_at":null,"expires_at":null,"is_active":true},{"id":3,"title":"Free Shipping in Dhaka Metro","image":"banners\/1061ed2a-18ae-36d2-be64-351c03f39718.jpg","link_url":"https:\/\/oberbrunner.com\/assumenda-nam-repellendus-praesentium-mollitia-quos-natus-nihil.html","sort_order":2,"starts_at":null,"expires_at":null,"is_active":true}]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -117,9 +117,42 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         deprecated: false
+      subcategory:
+        custom: []
+        name: subcategory
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
       skin_type:
         custom: []
         name: skin_type
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      tag:
+        custom: []
+        name: tag
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      label:
+        custom: []
+        name: label
         description: ''
         required: false
         example: architecto
@@ -155,7 +188,7 @@ endpoints:
         name: in_stock
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -177,7 +210,7 @@ endpoints:
         name: sort
         description: ''
         required: false
-        example: price_desc
+        example: newest
         type: string
         enumValues:
           - price_asc
@@ -199,12 +232,15 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       category: architecto
+      subcategory: architecto
       skin_type: architecto
+      tag: architecto
+      label: architecto
       min_price: 39
       max_price: 16
-      in_stock: true
+      in_stock: false
       search: 'n'
-      sort: price_desc
+      sort: newest
       per_page: 7
     fileParameters: []
     responses:
@@ -234,7 +270,7 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Get product detail'
-      description: 'Returns full detail (images, variants, skin types) for a single active product by slug.'
+      description: 'Returns full detail (images, variants, skin types, tags) for a single active product by slug.'
       authenticated: false
       deprecated: false
     headers:

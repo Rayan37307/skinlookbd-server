@@ -59,7 +59,7 @@ endpoints:
         name: reason
         description: ''
         required: true
-        example: return
+        example: restock
         type: string
         enumValues:
           - restock
@@ -82,7 +82,7 @@ endpoints:
     cleanBodyParameters:
       product_variant_id: 16
       change_quantity: 16
-      reason: return
+      reason: restock
       note: 'n'
     fileParameters: []
     responses: []

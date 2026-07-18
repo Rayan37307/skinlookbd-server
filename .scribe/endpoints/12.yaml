@@ -67,14 +67,14 @@ endpoints:
         name: review_id
         description: 'The ID of the review.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      review_id: 16
+      review_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:

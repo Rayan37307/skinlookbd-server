@@ -249,7 +249,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: billing
+        example: shipping
         type: string
         enumValues:
           - shipping
@@ -262,7 +262,7 @@ endpoints:
         name: is_default
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -277,8 +277,8 @@ endpoints:
       city: h
       area: w
       postal_code: aykcmyuwpwlvqwrs
-      type: billing
-      is_default: false
+      type: shipping
+      is_default: true
     fileParameters: []
     responses: []
     responseFields: []
@@ -315,14 +315,14 @@ endpoints:
         name: id
         description: 'The ID of the address.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 16
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -484,14 +484,14 @@ endpoints:
         name: id
         description: 'The ID of the address.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 16
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []

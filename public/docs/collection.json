@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "SkinLookBD API Documentation",
-        "_postman_id": "3762839a-5854-46e9-8855-22544de6a685",
+        "_postman_id": "e6e48327-f117-438d-b848-16fcf23078cb",
         "description": "REST API for the SkinLookBD skincare storefront, admin dashboard, and mobile clients.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -119,7 +119,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"label\":\"b\",\"recipient_name\":\"n\",\"phone\":\"01864255931\",\"address_line1\":\"i\",\"address_line2\":\"k\",\"city\":\"h\",\"area\":\"w\",\"postal_code\":\"aykcmyuwpwlvqwrs\",\"type\":\"billing\",\"is_default\":false}"
+                            "raw": "{\"label\":\"b\",\"recipient_name\":\"n\",\"phone\":\"01864255931\",\"address_line1\":\"i\",\"address_line2\":\"k\",\"city\":\"h\",\"area\":\"w\",\"postal_code\":\"aykcmyuwpwlvqwrs\",\"type\":\"shipping\",\"is_default\":true}"
                         },
                         "description": ""
                     },
@@ -137,7 +137,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the address."
                                 }
                             ]
@@ -173,7 +173,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the address."
                                 }
                             ]
@@ -247,7 +247,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"parent_id\":16,\"name\":\"n\",\"slug\":\"g\",\"description\":\"Eius et animi quos velit et.\",\"image\":\"v\",\"is_active\":true}"
+                            "raw": "{\"parent_id\":16,\"name\":\"n\",\"slug\":\"g\",\"description\":\"Eius et animi quos velit et.\",\"image\":\"v\",\"is_active\":false}"
                         },
                         "description": ""
                     },
@@ -283,7 +283,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"parent_id\":16,\"name\":\"n\",\"slug\":\"g\",\"description\":\"Eius et animi quos velit et.\",\"image\":\"v\",\"is_active\":true}"
+                            "raw": "{\"parent_id\":16,\"name\":\"n\",\"slug\":\"g\",\"description\":\"Eius et animi quos velit et.\",\"image\":\"v\",\"is_active\":false}"
                         },
                         "description": ""
                     },
@@ -369,7 +369,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"category_id\":16,\"name\":\"n\",\"slug\":\"g\",\"brand\":\"z\",\"description\":\"Eius et animi quos velit et.\",\"ingredients\":\"architecto\",\"base_price\":39,\"status\":\"archived\",\"skin_type_ids\":[16]}"
+                            "raw": "{\"category_id\":16,\"name\":\"n\",\"slug\":\"g\",\"sku\":\"z\",\"brand\":\"m\",\"description\":\"Eius et animi quos velit et.\",\"short_description\":\"architecto\",\"ingredients\":\"architecto\",\"base_price\":39,\"sale_price\":84,\"cost_price\":12,\"status\":\"active\",\"track_inventory\":true,\"stock_quantity\":77,\"free_shipping\":true,\"meta_title\":\"i\",\"meta_description\":\"y\",\"focus_keyword\":\"v\",\"canonical_url\":\"http:\\\/\\\/www.dach.com\\\/mollitia-modi-deserunt-aut-ab-provident-perspiciatis-quo.html\",\"skin_type_ids\":[16],\"tag_ids\":[16],\"label_ids\":[16],\"related_product_ids\":[16],\"additional_information\":[{\"label\":\"n\",\"value\":\"g\"}]}"
                         },
                         "description": "Created with `draft` status by default unless `status` is given."
                     },
@@ -438,7 +438,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"category_id\":16,\"name\":\"n\",\"slug\":\"g\",\"brand\":\"z\",\"description\":\"Eius et animi quos velit et.\",\"ingredients\":\"architecto\",\"base_price\":39,\"status\":\"active\",\"skin_type_ids\":[16]}"
+                            "raw": "{\"category_id\":16,\"name\":\"n\",\"slug\":\"g\",\"sku\":\"z\",\"brand\":\"m\",\"description\":\"Eius et animi quos velit et.\",\"short_description\":\"architecto\",\"ingredients\":\"architecto\",\"base_price\":39,\"sale_price\":84,\"cost_price\":12,\"status\":\"draft\",\"track_inventory\":false,\"stock_quantity\":77,\"free_shipping\":true,\"meta_title\":\"i\",\"meta_description\":\"y\",\"focus_keyword\":\"v\",\"canonical_url\":\"http:\\\/\\\/www.dach.com\\\/mollitia-modi-deserunt-aut-ab-provident-perspiciatis-quo.html\",\"skin_type_ids\":[16],\"tag_ids\":[16],\"label_ids\":[16],\"related_product_ids\":[16],\"additional_information\":[{\"label\":\"n\",\"value\":\"g\"}]}"
                         },
                         "description": ""
                     },
@@ -836,7 +836,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"product_variant_id\":16,\"change_quantity\":16,\"reason\":\"return\",\"note\":\"n\"}"
+                            "raw": "{\"product_variant_id\":16,\"change_quantity\":16,\"reason\":\"restock\",\"note\":\"n\"}"
                         },
                         "description": "Applies a positive or negative quantity change to a variant's stock and\nrecords an `InventoryLog` entry. Rejected with a 422 if it would push stock\nbelow zero."
                     },
@@ -910,7 +910,7 @@
                                 {
                                     "id": "order_id",
                                     "key": "order_id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the order."
                                 }
                             ]
@@ -946,7 +946,7 @@
                                 {
                                     "id": "order_id",
                                     "key": "order_id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the order."
                                 }
                             ]
@@ -1023,7 +1023,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"code\":\"b\",\"discount_type\":\"flat\",\"discount_value\":22,\"min_order_value\":84,\"max_uses\":66,\"max_uses_per_user\":27,\"starts_at\":\"2026-07-14T13:38:15\",\"expires_at\":\"2052-08-06\",\"is_active\":false}"
+                            "raw": "{\"code\":\"b\",\"discount_type\":\"flat\",\"discount_value\":22,\"min_order_value\":84,\"max_uses\":66,\"max_uses_per_user\":27,\"starts_at\":\"2026-07-18T16:07:31\",\"expires_at\":\"2052-08-10\",\"is_active\":false}"
                         },
                         "description": "The code is normalized to uppercase."
                     },
@@ -1041,7 +1041,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the coupon."
                                 }
                             ]
@@ -1059,7 +1059,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"code\":\"b\",\"discount_type\":\"percent\",\"discount_value\":22,\"min_order_value\":84,\"max_uses\":66,\"max_uses_per_user\":27,\"starts_at\":\"2026-07-14T13:38:15\",\"expires_at\":\"2052-08-06\",\"is_active\":false}"
+                            "raw": "{\"code\":\"b\",\"discount_type\":\"flat\",\"discount_value\":22,\"min_order_value\":84,\"max_uses\":66,\"max_uses_per_user\":27,\"starts_at\":\"2026-07-18T16:07:31\",\"expires_at\":\"2052-08-10\",\"is_active\":true}"
                         },
                         "description": ""
                     },
@@ -1077,7 +1077,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the coupon."
                                 }
                             ]
@@ -1166,19 +1166,19 @@
                                 },
                                 {
                                     "key": "starts_at",
-                                    "value": "2026-07-14T13:38:15",
+                                    "value": "2026-07-18T16:07:31",
                                     "type": "text",
                                     "description": "Must be a valid date."
                                 },
                                 {
                                     "key": "expires_at",
-                                    "value": "2052-08-06",
+                                    "value": "2052-08-10",
                                     "type": "text",
                                     "description": "Must be a valid date. Must be a date after <code>starts_at<\/code>."
                                 },
                                 {
                                     "key": "is_active",
-                                    "value": "1",
+                                    "value": "",
                                     "type": "text",
                                     "description": ""
                                 },
@@ -1205,7 +1205,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the banner."
                                 }
                             ]
@@ -1244,13 +1244,13 @@
                                 },
                                 {
                                     "key": "starts_at",
-                                    "value": "2026-07-14T13:38:15",
+                                    "value": "2026-07-18T16:07:31",
                                     "type": "text",
                                     "description": "Must be a valid date."
                                 },
                                 {
                                     "key": "expires_at",
-                                    "value": "2052-08-06",
+                                    "value": "2052-08-10",
                                     "type": "text",
                                     "description": "Must be a valid date. Must be a date after <code>starts_at<\/code>."
                                 },
@@ -1288,7 +1288,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the banner."
                                 }
                             ]
@@ -1383,7 +1383,7 @@
                                 {
                                     "id": "review_id",
                                     "key": "review_id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the review."
                                 }
                             ]
@@ -2017,7 +2017,7 @@
                                 }
                             ],
                             "code": 200,
-                            "body": "{\"banners\":[]}",
+                            "body": "{\"banners\":[{\"id\":1,\"title\":\"New Arrivals: Korean Skincare\",\"image\":\"banners\\\/7acd3682-9bc2-3979-a1e4-c080ceaca1af.jpg\",\"link_url\":\"http:\\\/\\\/www.wolff.net\\\/\",\"sort_order\":0,\"starts_at\":null,\"expires_at\":null,\"is_active\":true},{\"id\":2,\"title\":\"Sunscreen Season \\u2014 Up to 20% Off\",\"image\":\"banners\\\/afa49f88-2b04-37d9-be58-985123b7b470.jpg\",\"link_url\":\"http:\\\/\\\/www.boyle.com\\\/distinctio-aut-corporis-voluptas-harum.html\",\"sort_order\":1,\"starts_at\":null,\"expires_at\":null,\"is_active\":true},{\"id\":3,\"title\":\"Free Shipping in Dhaka Metro\",\"image\":\"banners\\\/1061ed2a-18ae-36d2-be64-351c03f39718.jpg\",\"link_url\":\"https:\\\/\\\/oberbrunner.com\\\/assumenda-nam-repellendus-praesentium-mollitia-quos-natus-nihil.html\",\"sort_order\":2,\"starts_at\":null,\"expires_at\":null,\"is_active\":true}]}",
                             "name": ""
                         }
                     ]
@@ -2044,7 +2044,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"category\":\"architecto\",\"skin_type\":\"architecto\",\"min_price\":39,\"max_price\":16,\"in_stock\":true,\"search\":\"n\",\"sort\":\"price_desc\",\"per_page\":7}"
+                            "raw": "{\"category\":\"architecto\",\"subcategory\":\"architecto\",\"skin_type\":\"architecto\",\"tag\":\"architecto\",\"label\":\"architecto\",\"min_price\":39,\"max_price\":16,\"in_stock\":false,\"search\":\"n\",\"sort\":\"newest\",\"per_page\":7}"
                         },
                         "description": "Browse active products with filtering, search, sorting, and pagination.",
                         "auth": {
@@ -2102,7 +2102,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "Returns full detail (images, variants, skin types) for a single active product by slug.",
+                        "description": "Returns full detail (images, variants, skin types, tags) for a single active product by slug.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -2298,7 +2298,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the order."
                                 }
                             ]
@@ -2331,7 +2331,7 @@
                                 {
                                     "id": "order_id",
                                     "key": "order_id",
-                                    "value": 16,
+                                    "value": 1,
                                     "description": "The ID of the order."
                                 }
                             ]

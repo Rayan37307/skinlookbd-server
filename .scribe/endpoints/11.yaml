@@ -139,7 +139,7 @@ endpoints:
         name: starts_at
         description: 'Must be a valid date.'
         required: false
-        example: '2026-07-14T13:38:15'
+        example: '2026-07-18T16:07:31'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -150,7 +150,7 @@ endpoints:
         name: expires_at
         description: 'Must be a valid date. Must be a date after <code>starts_at</code>.'
         required: false
-        example: '2052-08-06'
+        example: '2052-08-10'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -174,8 +174,8 @@ endpoints:
       min_order_value: 84
       max_uses: 66
       max_uses_per_user: 27
-      starts_at: '2026-07-14T13:38:15'
-      expires_at: '2052-08-06'
+      starts_at: '2026-07-18T16:07:31'
+      expires_at: '2052-08-10'
       is_active: false
     fileParameters: []
     responses: []
@@ -215,14 +215,14 @@ endpoints:
         name: id
         description: 'The ID of the coupon.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 16
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -242,7 +242,7 @@ endpoints:
         name: discount_type
         description: ''
         required: false
-        example: percent
+        example: flat
         type: string
         enumValues:
           - percent
@@ -299,7 +299,7 @@ endpoints:
         name: starts_at
         description: 'Must be a valid date.'
         required: false
-        example: '2026-07-14T13:38:15'
+        example: '2026-07-18T16:07:31'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -310,7 +310,7 @@ endpoints:
         name: expires_at
         description: 'Must be a valid date. Must be a date after <code>starts_at</code>.'
         required: false
-        example: '2052-08-06'
+        example: '2052-08-10'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -321,7 +321,7 @@ endpoints:
         name: is_active
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -329,14 +329,14 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       code: b
-      discount_type: percent
+      discount_type: flat
       discount_value: 22
       min_order_value: 84
       max_uses: 66
       max_uses_per_user: 27
-      starts_at: '2026-07-14T13:38:15'
-      expires_at: '2052-08-06'
-      is_active: false
+      starts_at: '2026-07-18T16:07:31'
+      expires_at: '2052-08-10'
+      is_active: true
     fileParameters: []
     responses: []
     responseFields: []
@@ -374,14 +374,14 @@ endpoints:
         name: id
         description: 'The ID of the coupon.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 16
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -510,7 +510,7 @@ endpoints:
         name: starts_at
         description: 'Must be a valid date.'
         required: false
-        example: '2026-07-14T13:38:15'
+        example: '2026-07-18T16:07:31'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -521,7 +521,7 @@ endpoints:
         name: expires_at
         description: 'Must be a valid date. Must be a date after <code>starts_at</code>.'
         required: false
-        example: '2052-08-06'
+        example: '2052-08-10'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -532,7 +532,7 @@ endpoints:
         name: is_active
         description: ''
         required: false
-        example: true
+        example: false
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -542,9 +542,9 @@ endpoints:
       title: b
       link_url: 'http://bailey.com/'
       sort_order: 77
-      starts_at: '2026-07-14T13:38:15'
-      expires_at: '2052-08-06'
-      is_active: true
+      starts_at: '2026-07-18T16:07:31'
+      expires_at: '2052-08-10'
+      is_active: false
     fileParameters:
       image: null
     responses: []
@@ -584,14 +584,14 @@ endpoints:
         name: id
         description: 'The ID of the banner.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 16
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -644,7 +644,7 @@ endpoints:
         name: starts_at
         description: 'Must be a valid date.'
         required: false
-        example: '2026-07-14T13:38:15'
+        example: '2026-07-18T16:07:31'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -655,7 +655,7 @@ endpoints:
         name: expires_at
         description: 'Must be a valid date. Must be a date after <code>starts_at</code>.'
         required: false
-        example: '2052-08-06'
+        example: '2052-08-10'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -676,8 +676,8 @@ endpoints:
       title: b
       link_url: 'http://bailey.com/'
       sort_order: 77
-      starts_at: '2026-07-14T13:38:15'
-      expires_at: '2052-08-06'
+      starts_at: '2026-07-18T16:07:31'
+      expires_at: '2052-08-10'
       is_active: true
     fileParameters:
       image: null
@@ -717,14 +717,14 @@ endpoints:
         name: id
         description: 'The ID of the banner.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 16
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
