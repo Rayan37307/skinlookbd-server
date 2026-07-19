@@ -21,9 +21,9 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $skinTypes = SkinType::all()->keyBy('name');
-        $tags = Tag::all()->keyBy('name');
-        $labels = Label::all()->keyBy('name');
+        $skinTypes = SkinType::all();
+        $tags = Tag::all();
+        $labels = Label::all();
 
         $sku = 1;
 
@@ -81,19 +81,19 @@ class ProductSeeder extends Seeder
 
                 if (! empty($data['skin_types'])) {
                     $product->skinTypes()->attach(
-                        $skinTypes->only($data['skin_types'])->pluck('id')
+                        $skinTypes->whereIn('name', $data['skin_types'])->pluck('id')
                     );
                 }
 
                 if (! empty($data['tags'])) {
                     $product->tags()->attach(
-                        $tags->only($data['tags'])->pluck('id')
+                        $tags->whereIn('name', $data['tags'])->pluck('id')
                     );
                 }
 
                 if (! empty($data['labels'])) {
                     $product->labels()->attach(
-                        $labels->only($data['labels'])->pluck('id')
+                        $labels->whereIn('name', $data['labels'])->pluck('id')
                     );
                 }
             }
