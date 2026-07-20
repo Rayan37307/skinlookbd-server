@@ -68,10 +68,18 @@ php artisan up
 
 ## Frontend assets
 
-None of the above touches `public/build/` — there's no Node.js on the server. If a change
-included frontend/CSS/JS work, build it locally first (`npm ci && npm run build`) and upload the
-resulting `public/build/` directory separately (FTP/File Manager, or `scp`) before step 2. Pure
-backend/PHP changes (routes, controllers, migrations, seeders, Filament) need no asset step.
+`public/build/` (the compiled JS/CSS) is committed to the repo, so `git pull` in step 3 already
+delivers whatever was last built — no separate upload step, no Node.js needed on the server.
+
+If you changed any frontend/CSS/JS, **build and commit before deploying**:
+
+```bash
+npm ci && npm run build
+git add public/build && git commit -m "Rebuild frontend assets"
+git push
+```
+
+then continue with step 1 as normal. Pure backend/PHP changes need no rebuild at all.
 
 ## If something goes wrong mid-deploy
 

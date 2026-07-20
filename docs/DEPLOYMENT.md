@@ -106,13 +106,20 @@ FTP is painfully slow).
 
 ## 4. Build frontend assets (both paths, always local — no Node on the server)
 
+`public/build/` is committed to the repo, so if you're on **Option 1** (document root points
+straight at the cloned repo's `public/`), step 2's `git clone`/`git pull` already delivers it —
+skip the rest of this section entirely.
+
+If you're on **Option 2** (document root is a separate copy in `public_html/`), git alone doesn't
+reach that copy, so you still need to sync `public/build/` into `public_html/build/` after each
+pull (File Manager, `scp`, or a small rsync script). If you changed any frontend/CSS/JS, rebuild
+and commit before deploying:
+
 ```bash
 npm ci
 npm run build
+git add public/build && git commit -m "Rebuild frontend assets" && git push
 ```
-
-Upload the generated `public/build/` directory to wherever `public/` ends up on the server
-(`~/skinlookserver/public/build` for Option 1, or `~/public_html/build` for Option 2).
 
 ## 5. Configure the environment
 
@@ -221,18 +228,15 @@ to work correctly.
 
 ## 6. Repeat deploys
 
-Frontend assets are always built **locally** (or in CI), never on the shared host — see the note
-at the top of [§4](#4-build-frontend-assets-both-paths-always-local--no-node-on-the-server). Node
-is a build-time tool only; once `npm run build` produces `public/build/*.{js,css}`, those are
-static files served by Apache/LiteSpeed like any other asset, so the PHP host never needs Node
-installed. If frontend code changed, run this locally first and upload the resulting
-`public/build/` directory before the SSH steps below:
+`public/build/` is committed to the repo, so on **Option 1** `git pull` below already delivers
+the latest built assets — nothing to build or upload separately unless you changed frontend code,
+in which case rebuild and commit first (see §4). On **Option 2**, you still need to sync
+`public/build/` into `public_html/build/` after pulling, since git doesn't reach that copy. Either
+way, Node is a build-time tool only — once assets are committed, the PHP host never needs Node
+installed to serve them.
 
-```bash
-npm ci && npm run build
-```
-
-Then, each subsequent deploy (Path A, SSH):
+See `DEPLOY.md` at the repo root for the day-to-day command list. Each subsequent deploy
+(Path A, SSH):
 
 ```bash
 cd ~/skinlookserver
