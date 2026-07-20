@@ -64,6 +64,7 @@ class AdminProductResource extends JsonResource
                 'id' => $image->id,
                 'type' => $image->type,
                 'path' => $image->path,
+                'url' => $image->url(),
                 'alt' => $image->alt,
                 'sort_order' => $image->sort_order,
             ])),

@@ -13,7 +13,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
 
 class ImagesRelationManager extends RelationManager
 {
@@ -65,7 +64,7 @@ class ImagesRelationManager extends RelationManager
                 TextColumn::make('path')
                     ->label('Media')
                     ->formatStateUsing(fn ($record) => $record->type === 'video' ? $record->path : basename($record->path))
-                    ->url(fn ($record) => $record->type === 'video' ? $record->path : Storage::disk('public')->url($record->path))
+                    ->url(fn ($record) => $record->type === 'video' ? $record->path : $record->url())
                     ->openUrlInNewTab()
                     ->limit(40),
                 TextColumn::make('alt')

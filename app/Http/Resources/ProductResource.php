@@ -39,7 +39,7 @@ class ProductResource extends JsonResource
             'sale_price' => $this->sale_price,
             'is_on_sale' => $this->isOnSale(),
             'price_from' => $this->whenLoaded('variants', fn () => $this->variants->min('price') ?? $this->effectivePrice()),
-            'primary_image' => $this->whenLoaded('images', fn () => $this->images->first()?->path),
+            'primary_image' => $this->whenLoaded('images', fn () => $this->images->first()?->url()),
             'free_shipping' => $this->free_shipping,
             'in_stock' => $this->whenLoaded('variants', fn () => $this->isInStock()),
         ];

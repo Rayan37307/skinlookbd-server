@@ -49,6 +49,7 @@ class ProductDetailResource extends JsonResource
             'images' => $this->whenLoaded('images', fn () => $this->images->map(fn ($image) => [
                 'type' => $image->type,
                 'path' => $image->path,
+                'url' => $image->url(),
                 'alt' => $image->alt,
             ])),
             'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
