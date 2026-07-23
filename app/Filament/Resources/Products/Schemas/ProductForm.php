@@ -91,8 +91,22 @@ class ProductForm
                 ->helperText('Only used for products without variants.')
                 ->maxLength(255)
                 ->unique(ignoreRecord: true),
-            TextInput::make('brand')
-                ->maxLength(255),
+            Select::make('brand_id')
+                ->label('Brand')
+                ->relationship('brand', 'name')
+                ->searchable()
+                ->preload()
+                ->createOptionForm([
+                    TextInput::make('name')
+                        ->required()
+                        ->maxLength(255)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
+                    TextInput::make('slug')
+                        ->required()
+                        ->maxLength(255)
+                        ->unique(ignoreRecord: true),
+                ]),
             Textarea::make('short_description')
                 ->rows(2)
                 ->columnSpanFull(),

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Label;
 use App\Models\Product;
@@ -31,12 +32,17 @@ class ProductSeeder extends Seeder
             $category = Category::where('slug', $categorySlug)->firstOrFail();
 
             foreach ($products as $data) {
+                $brand = Brand::firstOrCreate(
+                    ['slug' => Str::slug($data['brand'])],
+                    ['name' => $data['brand'], 'is_active' => true],
+                );
+
                 $product = Product::create([
                     'category_id' => $category->id,
+                    'brand_id' => $brand->id,
                     'name' => $data['name'],
                     'slug' => Str::slug($data['name']),
                     'sku' => 'SLB-'.str_pad((string) $sku++, 4, '0', STR_PAD_LEFT),
-                    'brand' => $data['brand'],
                     'short_description' => $data['short_description'],
                     'description' => $data['description'],
                     'ingredients' => $data['ingredients'],

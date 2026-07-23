@@ -2,6 +2,7 @@
 
 namespace App\Filament\Imports;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Filament\Actions\Imports\ImportColumn;
@@ -105,9 +106,7 @@ class ProductImporter extends Importer
             $record->slug = $this->uniqueSlug(Str::slug($title));
         }
 
-        if (filled($this->data['brand'] ?? null)) {
-            $record->brand = $this->data['brand'];
-        }
+        $record->brand_id = $this->resolveBrandId($this->data['brand'] ?? null);
 
         $record->description = $this->cleanHtml((string) ($this->data['description'] ?? ''));
         $record->short_description = $this->cleanHtml((string) ($this->data['short_description'] ?? ''));
@@ -210,6 +209,24 @@ class ProductImporter extends Importer
         );
 
         return $sub->id;
+    }
+
+    /**
+     * Resolves (creating if needed) a Brand by name, deduped by slug. Returns null for a
+     * blank/missing brand rather than inventing one.
+     */
+    private function resolveBrandId(?string $rawName): ?int
+    {
+        $rawName = trim((string) $rawName);
+
+        if ($rawName === '') {
+            return null;
+        }
+
+        return Brand::firstOrCreate(
+            ['slug' => Str::slug($rawName)],
+            ['name' => $rawName, 'is_active' => true],
+        )->id;
     }
 
     /**

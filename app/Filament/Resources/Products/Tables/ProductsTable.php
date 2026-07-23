@@ -30,7 +30,8 @@ class ProductsTable
                     ->searchable(),
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('brand')
+                TextColumn::make('brand.name')
+                    ->label('Brand')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('base_price')
@@ -77,6 +78,10 @@ class ProductsTable
                 SelectFilter::make('category_id')
                     ->label('Category')
                     ->options(fn () => Category::query()->orderBy('name')->pluck('name', 'id')),
+                SelectFilter::make('brand_id')
+                    ->label('Brand')
+                    ->relationship('brand', 'name')
+                    ->searchable(),
                 SelectFilter::make('tags')
                     ->label('Tag')
                     ->relationship('tags', 'name'),

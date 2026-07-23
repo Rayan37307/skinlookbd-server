@@ -19,7 +19,12 @@ class AdminProductResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'sku' => $this->sku,
-            'brand' => $this->brand,
+            'brand' => $this->whenLoaded('brand', fn () => $this->brand ? [
+                'id' => $this->brand->id,
+                'name' => $this->brand->name,
+                'slug' => $this->brand->slug,
+                'logo' => $this->brand->logo,
+            ] : null),
             'short_description' => $this->short_description,
             'description' => $this->description,
             'ingredients' => $this->ingredients,

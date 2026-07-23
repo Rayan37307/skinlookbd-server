@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -71,9 +72,9 @@ test('it filters products that are in stock', function () {
 });
 
 test('it searches products by name or brand', function () {
-    Product::factory()->create(['name' => 'Vitamin C Serum', 'brand' => 'Glowlab']);
-    Product::factory()->create(['name' => 'Hydrating Toner', 'brand' => 'Vitamin Co']);
-    Product::factory()->create(['name' => 'Clay Mask', 'brand' => 'Mudworks']);
+    Product::factory()->create(['name' => 'Vitamin C Serum', 'brand_id' => Brand::factory(['name' => 'Glowlab'])]);
+    Product::factory()->create(['name' => 'Hydrating Toner', 'brand_id' => Brand::factory(['name' => 'Vitamin Co'])]);
+    Product::factory()->create(['name' => 'Clay Mask', 'brand_id' => Brand::factory(['name' => 'Mudworks'])]);
 
     $response = $this->getJson('/api/v1/products?search=vitamin');
 

@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
  */
 class ProductController extends Controller
 {
-    private const WITH = ['category.parent', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts'];
+    private const WITH = ['category.parent', 'brand', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts'];
 
     /**
      * List all products
@@ -40,9 +40,13 @@ class ProductController extends Controller
             $query->where('category_id', $categoryId);
         }
 
+        if ($brandId = $request->integer('brand_id')) {
+            $query->where('brand_id', $brandId);
+        }
+
         if ($search = $request->string('search')->value()) {
             $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
-                ->orWhere('brand', 'like', "%{$search}%"));
+                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$search}%")));
         }
 
         $products = $query->latest()->paginate($request->integer('per_page', 15));

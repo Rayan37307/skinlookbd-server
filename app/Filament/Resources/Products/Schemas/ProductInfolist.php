@@ -23,7 +23,8 @@ class ProductInfolist
                 TextEntry::make('sku')
                     ->label('SKU')
                     ->placeholder('-'),
-                TextEntry::make('brand')
+                TextEntry::make('brand.name')
+                    ->label('Brand')
                     ->placeholder('-'),
                 TextEntry::make('short_description')
                     ->placeholder('-')

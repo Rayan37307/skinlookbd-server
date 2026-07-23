@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'category_id', 'name', 'slug', 'sku', 'brand', 'description', 'short_description', 'ingredients',
+    'category_id', 'brand_id', 'name', 'slug', 'sku', 'description', 'short_description', 'ingredients',
     'additional_information', 'base_price', 'sale_price', 'cost_price', 'status', 'track_inventory',
     'stock_quantity', 'free_shipping', 'meta_title', 'meta_description', 'focus_keyword', 'canonical_url',
 ])]
@@ -42,6 +42,14 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return BelongsTo<Brand, $this>
+     */
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
     }
 
     /**

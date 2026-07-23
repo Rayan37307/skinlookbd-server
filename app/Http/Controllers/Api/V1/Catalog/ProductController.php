@@ -22,7 +22,7 @@ class ProductController extends Controller
      */
     public function index(ProductIndexRequest $request): JsonResponse
     {
-        $query = Product::active()->with(['category.parent', 'images', 'variants', 'tags', 'labels']);
+        $query = Product::active()->with(['category.parent', 'brand', 'images', 'variants', 'tags', 'labels']);
 
         if ($category = $request->string('category')->value()) {
             $matchedCategory = Category::where('slug', $category)->first();
@@ -50,6 +50,10 @@ class ProductController extends Controller
             $query->whereHas('labels', fn ($q) => $q->where('slug', $label));
         }
 
+        if ($brand = $request->string('brand')->value()) {
+            $query->whereHas('brand', fn ($q) => $q->where('slug', $brand));
+        }
+
         if ($request->filled('min_price')) {
             $query->where('base_price', '>=', $request->integer('min_price'));
         }
@@ -64,7 +68,7 @@ class ProductController extends Controller
 
         if ($search = $request->string('search')->value()) {
             $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
-                ->orWhere('brand', 'like', "%{$search}%"));
+                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$search}%")));
         }
 
         match ($request->string('sort')->value()) {
@@ -94,7 +98,7 @@ class ProductController extends Controller
     public function show(string $slug): JsonResponse
     {
         $product = Product::active()
-            ->with(['category.parent', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts.category.parent', 'relatedProducts.variants', 'relatedProducts.images'])
+            ->with(['category.parent', 'brand', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts.category.parent', 'relatedProducts.brand', 'relatedProducts.variants', 'relatedProducts.images'])
             ->where('slug', $slug)
             ->firstOrFail();
 
