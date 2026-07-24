@@ -90,3 +90,8 @@ php artisan up   # bring the site back if it's stuck in maintenance mode
 
 See `docs/DEPLOYMENT.md`'s Troubleshooting section for common causes (stale cache, wrong PHP
 version, missing extensions).
+
+
+###  When we import it dosent imports we have manually process itbythis command
+
+```php artisan queue:work --stop-when-empty -v```

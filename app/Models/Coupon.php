@@ -34,7 +34,11 @@ class Coupon extends Model
         return $this->hasMany(CouponUsage::class);
     }
 
-    public function isRedeemableBy(User $user, int $subtotal): bool
+    /**
+     * `$user` is null for guest checkout — the per-user usage cap only applies to
+     * identified accounts; guests are still subject to the global `max_uses` cap.
+     */
+    public function isRedeemableBy(?User $user, int $subtotal): bool
     {
         if (! $this->is_active) {
             return false;
@@ -56,7 +60,7 @@ class Coupon extends Model
             return false;
         }
 
-        if ($this->max_uses_per_user !== null
+        if ($user && $this->max_uses_per_user !== null
             && $this->usages()->where('user_id', $user->id)->count() >= $this->max_uses_per_user) {
             return false;
         }

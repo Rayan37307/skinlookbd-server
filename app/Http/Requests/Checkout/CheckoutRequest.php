@@ -19,16 +19,31 @@ class CheckoutRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
+     * Authenticated customers check out against a saved `address_id`. Guests (no Sanctum
+     * user — identified only by their `X-Cart-Token` cart) submit shipping details inline
+     * instead, since they have no saved Address to reference.
+     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $user = $this->user('sanctum');
+        $isGuest = ! $user;
+
         return [
             'address_id' => [
-                'required',
+                Rule::requiredIf(! $isGuest),
+                'nullable',
                 'integer',
-                Rule::exists('addresses', 'id')->where('user_id', $this->user()?->id),
+                Rule::exists('addresses', 'id')->where('user_id', $user?->id),
             ],
+            'recipient_name' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'max:255'],
+            'recipient_phone' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
+            'shipping_address_line1' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'max:255'],
+            'shipping_address_line2' => ['nullable', 'string', 'max:255'],
+            'shipping_city' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'max:255'],
+            'shipping_area' => ['nullable', 'string', 'max:255'],
+            'shipping_postal_code' => ['nullable', 'string', 'max:20'],
             'payment_method' => ['required', 'string', 'in:cod'],
             'coupon_code' => ['nullable', 'string'],
             'notes' => ['nullable', 'string', 'max:1000'],

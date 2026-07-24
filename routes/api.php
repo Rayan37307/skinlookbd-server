@@ -67,9 +67,20 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     Route::get('shipping/estimate', ShippingEstimateController::class)->name('shipping.estimate');
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout');
+    // Works for both guests (X-Cart-Token) and authenticated customers (Sanctum bearer
+    // token) — deliberately not behind auth:sanctum, same pattern as the cart routes above.
+    Route::post('checkout', [CheckoutController::class, 'store'])
+        ->middleware('throttle:checkout')
+        ->name('checkout');
 
+    // Public, guest-friendly order lookup by order number + recipient phone. Must be
+    // registered before the auth-gated `orders/{order}` route below so "track" doesn't
+    // get swallowed by that implicit-binding segment.
+    Route::get('orders/track', [OrderController::class, 'track'])
+        ->middleware('throttle:track')
+        ->name('orders.track');
+
+    Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/', [OrderController::class, 'index'])->name('index');
             Route::get('{order}', [OrderController::class, 'show'])->name('show');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Orders;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Orders\OrderTrackRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\OrderService;
@@ -65,6 +66,28 @@ class OrderController extends Controller
 
         return response()->json([
             'order' => new OrderResource($order->fresh('items')),
+        ]);
+    }
+
+    /**
+     * Track an order
+     *
+     * Public lookup by order number + the recipient phone number on the order — no
+     * authentication required. Rate-limited; returns 404 if the pair doesn't match.
+     *
+     * @unauthenticated
+     */
+    public function track(OrderTrackRequest $request): JsonResponse
+    {
+        $order = Order::where('order_number', $request->string('order_number')->value())
+            ->where('recipient_phone', $request->string('phone')->value())
+            ->with('items')
+            ->first();
+
+        abort_if(! $order, 404, 'No matching order found.');
+
+        return response()->json([
+            'order' => new OrderResource($order),
         ]);
     }
 }
