@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Cart\CartController;
 use App\Http\Controllers\Api\V1\Cart\CouponController;
 use App\Http\Controllers\Api\V1\Catalog\BannerController;
 use App\Http\Controllers\Api\V1\Catalog\CategoryController;
+use App\Http\Controllers\Api\V1\Catalog\MenuController;
 use App\Http\Controllers\Api\V1\Catalog\ProductController;
 use App\Http\Controllers\Api\V1\Catalog\ProductReviewController;
 use App\Http\Controllers\Api\V1\Checkout\CheckoutController;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
     Route::get('banners', [BannerController::class, 'index'])->name('banners.index');
 
     Route::prefix('products')->name('products.')->group(function () {
