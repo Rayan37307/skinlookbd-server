@@ -30,7 +30,7 @@ class SiteMediaSettings extends Page implements HasForms
 
     protected static ?string $title = 'Appearance / Media';
 
-    protected static string $view = 'filament.pages.site-media-settings';
+    protected string $view = 'filament.pages.site-media-settings';
 
     /**
      * @var array<string, mixed>
