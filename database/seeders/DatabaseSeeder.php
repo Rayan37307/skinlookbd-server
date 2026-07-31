@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             MenuSeeder::class,
             ShippingZoneSeeder::class,
+            SiteMediaSeeder::class,
         ]);
 
         User::factory()->create([

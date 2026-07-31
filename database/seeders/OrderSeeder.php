@@ -109,7 +109,7 @@ class OrderSeeder extends Seeder
                 'shipping_address_line1' => $address->address_line1,
                 'shipping_address_line2' => $address->address_line2,
                 'shipping_city' => $address->city,
-                'shipping_area' => $address->area,
+                'shipping_email' => $address->email,
                 'shipping_postal_code' => $address->postal_code,
                 'notes' => null,
             ]);

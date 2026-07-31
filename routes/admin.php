@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Admin\ProductImageController;
 use App\Http\Controllers\Api\V1\Admin\ProductVariantController;
 use App\Http\Controllers\Api\V1\Admin\ReportController;
 use App\Http\Controllers\Api\V1\Admin\ReviewController;
+use App\Http\Controllers\Api\V1\Admin\SiteMediaController;
 use App\Http\Controllers\Api\V1\Admin\StaffController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,15 @@ Route::middleware('role:super-admin|catalog-manager')->group(function () {
 
     Route::apiResource('coupons', CouponController::class)->except(['show']);
     Route::apiResource('banners', BannerController::class)->except(['show']);
+
+    Route::prefix('site-media')->name('site-media.')->group(function () {
+        Route::put('{key}', [SiteMediaController::class, 'update'])
+            ->whereIn('key', array_keys(config('site_media.slots')))
+            ->name('update');
+        Route::delete('{key}/image', [SiteMediaController::class, 'destroyImage'])
+            ->whereIn('key', array_keys(config('site_media.slots')))
+            ->name('destroy-image');
+    });
 
     Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/', [ReviewController::class, 'index'])->name('index');

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Shipping;
 
+use App\Services\ShippingService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ShippingEstimateRequest extends FormRequest
 {
@@ -23,8 +25,7 @@ class ShippingEstimateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'city' => ['required', 'string'],
-            'area' => ['nullable', 'string'],
+            'city' => ['required', 'string', Rule::in(ShippingService::validCities())],
         ];
     }
 }

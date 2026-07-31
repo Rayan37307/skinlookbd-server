@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Me;
 
+use App\Services\ShippingService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateAddressRequest extends FormRequest
 {
@@ -26,10 +28,10 @@ class UpdateAddressRequest extends FormRequest
             'label' => ['nullable', 'string', 'max:255'],
             'recipient_name' => ['sometimes', 'string', 'max:255'],
             'phone' => ['sometimes', 'string', 'regex:/^01[3-9]\d{8}$/'],
+            'email' => ['nullable', 'email', 'max:255'],
             'address_line1' => ['sometimes', 'string', 'max:255'],
             'address_line2' => ['nullable', 'string', 'max:255'],
-            'city' => ['sometimes', 'string', 'max:255'],
-            'area' => ['nullable', 'string', 'max:255'],
+            'city' => ['sometimes', 'string', Rule::in(ShippingService::validCities())],
             'postal_code' => ['nullable', 'string', 'max:20'],
             'type' => ['sometimes', 'string', 'in:shipping,billing'],
             'is_default' => ['sometimes', 'boolean'],

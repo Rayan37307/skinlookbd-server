@@ -64,9 +64,9 @@ class CustomerSeeder extends Seeder
 
                 Address::factory()->for($customer)->create([
                     'recipient_name' => $name,
-                    'address_line1' => 'House '.fake()->numberBetween(1, 40).', Road '.fake()->numberBetween(1, 27),
+                    'email' => $customer->email,
+                    'address_line1' => 'House '.fake()->numberBetween(1, 40).', Road '.fake()->numberBetween(1, 27).', '.$home['area'],
                     'city' => 'Dhaka',
-                    'area' => $home['area'],
                     'postal_code' => $home['postal_code'],
                     'is_default' => true,
                 ]);
@@ -77,9 +77,9 @@ class CustomerSeeder extends Seeder
                     Address::factory()->for($customer)->create([
                         'label' => 'Office',
                         'recipient_name' => $name,
-                        'address_line1' => 'House '.fake()->numberBetween(1, 40).', Road '.fake()->numberBetween(1, 27),
+                        'email' => $customer->email,
+                        'address_line1' => 'House '.fake()->numberBetween(1, 40).', Road '.fake()->numberBetween(1, 27).', '.$office['area'],
                         'city' => 'Dhaka',
-                        'area' => $office['area'],
                         'postal_code' => $office['postal_code'],
                     ]);
                 }

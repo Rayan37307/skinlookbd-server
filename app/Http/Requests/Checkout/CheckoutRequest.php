@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Checkout;
 
+use App\Services\ShippingService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -39,10 +40,10 @@ class CheckoutRequest extends FormRequest
             ],
             'recipient_name' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'max:255'],
             'recipient_phone' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
+            'shipping_email' => ['nullable', 'email', 'max:255'],
             'shipping_address_line1' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'max:255'],
             'shipping_address_line2' => ['nullable', 'string', 'max:255'],
-            'shipping_city' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'max:255'],
-            'shipping_area' => ['nullable', 'string', 'max:255'],
+            'shipping_city' => [Rule::requiredIf($isGuest), 'nullable', 'string', Rule::in(ShippingService::validCities())],
             'shipping_postal_code' => ['nullable', 'string', 'max:20'],
             'payment_method' => ['required', 'string', 'in:cod'],
             'coupon_code' => ['nullable', 'string'],

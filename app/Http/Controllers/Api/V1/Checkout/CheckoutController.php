@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
  * Sanctum bearer token to check out as a customer (against a saved `address_id`), or an
  * `X-Cart-Token` header with no token to check out as a guest (inline shipping fields
  * required instead: `recipient_name`, `recipient_phone`, `shipping_address_line1`,
- * `shipping_city`, plus the optional `shipping_address_line2`/`shipping_area`/
+ * `shipping_city`, plus the optional `shipping_address_line2`/`shipping_email`/
  * `shipping_postal_code`).
  */
 class CheckoutController extends Controller
@@ -72,7 +72,7 @@ class CheckoutController extends Controller
             $discountTotal = $coupon->calculateDiscount($subtotal);
         }
 
-        $shipping = $this->shipping->calculate($shippingDetails['shipping_city'], $shippingDetails['shipping_area']);
+        $shipping = $this->shipping->calculate($shippingDetails['shipping_city']);
         $shippingCharge = $shipping['charge'];
 
         $total = max(0, $subtotal - $discountTotal) + $shippingCharge;
@@ -139,7 +139,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * @return array{address_id: int, recipient_name: string, recipient_phone: string, shipping_address_line1: string, shipping_address_line2: ?string, shipping_city: string, shipping_area: ?string, shipping_postal_code: ?string}
+     * @return array{address_id: int, recipient_name: string, recipient_phone: string, shipping_email: ?string, shipping_address_line1: string, shipping_address_line2: ?string, shipping_city: string, shipping_postal_code: ?string}
      */
     private function shippingDetailsFromAddress(CheckoutRequest $request, User $user): array
     {
@@ -149,16 +149,16 @@ class CheckoutController extends Controller
             'address_id' => $address->id,
             'recipient_name' => $address->recipient_name,
             'recipient_phone' => $address->phone,
+            'shipping_email' => $address->email,
             'shipping_address_line1' => $address->address_line1,
             'shipping_address_line2' => $address->address_line2,
             'shipping_city' => $address->city,
-            'shipping_area' => $address->area,
             'shipping_postal_code' => $address->postal_code,
         ];
     }
 
     /**
-     * @return array{address_id: null, recipient_name: string, recipient_phone: string, shipping_address_line1: string, shipping_address_line2: ?string, shipping_city: string, shipping_area: ?string, shipping_postal_code: ?string}
+     * @return array{address_id: null, recipient_name: string, recipient_phone: string, shipping_email: ?string, shipping_address_line1: string, shipping_address_line2: ?string, shipping_city: string, shipping_postal_code: ?string}
      */
     private function shippingDetailsFromRequest(CheckoutRequest $request): array
     {
@@ -166,10 +166,10 @@ class CheckoutController extends Controller
             'address_id' => null,
             'recipient_name' => $request->string('recipient_name')->value(),
             'recipient_phone' => $request->string('recipient_phone')->value(),
+            'shipping_email' => $request->string('shipping_email')->value() ?: null,
             'shipping_address_line1' => $request->string('shipping_address_line1')->value(),
             'shipping_address_line2' => $request->string('shipping_address_line2')->value() ?: null,
             'shipping_city' => $request->string('shipping_city')->value(),
-            'shipping_area' => $request->string('shipping_area')->value() ?: null,
             'shipping_postal_code' => $request->string('shipping_postal_code')->value() ?: null,
         ];
     }

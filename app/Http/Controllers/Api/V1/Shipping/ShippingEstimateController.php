@@ -15,13 +15,14 @@ class ShippingEstimateController extends Controller
     /**
      * Estimate shipping charge
      *
-     * Returns the shipping charge and ETA for a city/area, matched against configured
-     * shipping zones or a flat default rate if no zone matches.
+     * Returns the shipping charge and ETA for a city, looked up against a fixed 3-tier
+     * pricing table (Dhaka / Dhaka Suburb / other Bangladesh districts). The city must
+     * exactly match one of the whitelisted values.
      */
     public function __invoke(ShippingEstimateRequest $request, ShippingService $shipping): JsonResponse
     {
         return response()->json(
-            $shipping->calculate($request->string('city')->value(), $request->string('area')->value() ?: null)
+            $shipping->calculate($request->string('city')->value())
         );
     }
 }

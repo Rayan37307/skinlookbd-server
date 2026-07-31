@@ -38,7 +38,7 @@ class OrderFactory extends Factory
             'shipping_address_line1' => fake()->streetAddress(),
             'shipping_address_line2' => null,
             'shipping_city' => 'Dhaka',
-            'shipping_area' => null,
+            'shipping_email' => null,
             'shipping_postal_code' => fake()->postcode(),
             'notes' => null,
         ];

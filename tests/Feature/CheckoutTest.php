@@ -4,8 +4,6 @@ use App\Models\Address;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\ProductVariant;
-use App\Models\ShippingRate;
-use App\Models\ShippingZone;
 
 test('guests cannot check out', function () {
     $this->postJson('/api/v1/checkout', [])->assertUnauthorized();
@@ -74,11 +72,8 @@ test('checkout applies a valid coupon and reduces the total', function () {
     expect($response->json('order.subtotal'))->toBe(1000);
 });
 
-test('checkout uses the matching shipping zone rate', function () {
+test('checkout charges the shipping tier rate matching the address city', function () {
     $user = actingAsUser();
-    $zone = ShippingZone::factory()->create(['areas' => ['Dhaka']]);
-    ShippingRate::factory()->for($zone, 'zone')->create(['charge' => 50]);
-
     $address = Address::factory()->for($user)->create(['city' => 'Dhaka']);
     $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
     $this->postJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 1]);
@@ -88,7 +83,7 @@ test('checkout uses the matching shipping zone rate', function () {
         'payment_method' => 'cod',
     ]);
 
-    $response->assertCreated()->assertJsonPath('order.shipping_charge', 50);
+    $response->assertCreated()->assertJsonPath('order.shipping_charge', 70);
 });
 
 test("a user cannot check out using another user's address", function () {

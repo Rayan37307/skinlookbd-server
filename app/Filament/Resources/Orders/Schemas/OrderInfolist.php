@@ -44,7 +44,7 @@ class OrderInfolist
                         TextEntry::make('shipping_address_line1')->label('Address line 1')->columnSpanFull(),
                         TextEntry::make('shipping_address_line2')->label('Address line 2')->placeholder('-')->columnSpanFull(),
                         TextEntry::make('shipping_city')->label('City'),
-                        TextEntry::make('shipping_area')->label('Area')->placeholder('-'),
+                        TextEntry::make('shipping_email')->label('Email')->placeholder('-'),
                         TextEntry::make('shipping_postal_code')->label('Postal code')->placeholder('-'),
                     ]),
             ]);
