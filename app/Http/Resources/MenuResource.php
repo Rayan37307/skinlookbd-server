@@ -20,6 +20,7 @@ class MenuResource extends JsonResource
             'type' => $this->type,
             'target' => $this->target,
             'style' => $this->style,
+            'highlight_color' => $this->highlight_color,
             'children' => MenuResource::collection($this->whenLoaded('children')),
         ];
     }

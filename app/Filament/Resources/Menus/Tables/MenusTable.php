@@ -8,6 +8,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -34,6 +35,9 @@ class MenusTable
                     ->placeholder('-'),
                 TextColumn::make('style')
                     ->badge()
+                    ->placeholder('-'),
+                ColorColumn::make('highlight_color')
+                    ->label('Pill color')
                     ->placeholder('-'),
                 IconColumn::make('is_active')
                     ->boolean(),

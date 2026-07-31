@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Menus\Schemas;
 
 use App\Models\Category;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -52,7 +53,12 @@ class MenuForm
                     ->options([
                         'highlight' => 'Highlight (e.g. a Sale badge)',
                     ])
+                    ->live()
                     ->helperText('Optional visual treatment for the storefront to key off of.'),
+                ColorPicker::make('highlight_color')
+                    ->label('Pill background color')
+                    ->helperText('Background color of the highlight pill. Defaults to the brand color if left blank.')
+                    ->visible(fn (Get $get) => $get('style') === 'highlight'),
                 TextInput::make('sort_order')
                     ->numeric()
                     ->default(0)
