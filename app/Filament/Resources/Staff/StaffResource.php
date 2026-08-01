@@ -25,6 +25,8 @@ class StaffResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Staff';
 
+    protected static ?int $navigationSort = 1;
+
     private const STAFF_ROLES = ['super-admin', 'order-manager', 'catalog-manager'];
 
     public static function getEloquentQuery(): Builder

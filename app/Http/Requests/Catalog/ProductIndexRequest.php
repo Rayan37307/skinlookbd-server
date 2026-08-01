@@ -27,6 +27,7 @@ class ProductIndexRequest extends FormRequest
             'subcategory' => ['sometimes', 'string'],
             'skin_type' => ['sometimes', 'string'],
             'tag' => ['sometimes', 'string'],
+            'concern' => ['sometimes', 'string'],
             'label' => ['sometimes', 'string'],
             'brand' => ['sometimes', 'string'],
             'min_price' => ['sometimes', 'integer', 'min:0'],

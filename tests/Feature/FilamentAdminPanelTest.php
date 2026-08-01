@@ -1,5 +1,13 @@
 <?php
 
+use App\Models\Address;
+use App\Models\Banner;
+use App\Models\Coupon;
+use App\Models\Customer;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\ProductVariant;
+use App\Models\Review;
 use App\Models\User;
 
 function actingAsFilamentAdmin(string $role = 'super-admin'): User
@@ -27,8 +35,8 @@ test('a super admin can view the categories and products pages', function () {
 
 test('a super admin can view an order and its items', function () {
     actingAsFilamentAdmin();
-    $order = \App\Models\Order::factory()->create();
-    \App\Models\OrderItem::factory()->for($order)->create();
+    $order = Order::factory()->create();
+    OrderItem::factory()->for($order)->create();
 
     $this->get('/admin/orders')->assertOk();
     $this->get("/admin/orders/{$order->id}")->assertOk();
@@ -36,9 +44,9 @@ test('a super admin can view an order and its items', function () {
 
 test('a super admin can view coupons, banners, and reviews pages', function () {
     actingAsFilamentAdmin();
-    $coupon = \App\Models\Coupon::factory()->create();
-    $banner = \App\Models\Banner::factory()->create();
-    $review = \App\Models\Review::factory()->create();
+    $coupon = Coupon::factory()->create();
+    $banner = Banner::factory()->create();
+    $review = Review::factory()->create();
 
     $this->get('/admin/coupons')->assertOk();
     $this->get("/admin/coupons/{$coupon->id}")->assertOk();
@@ -75,10 +83,37 @@ test('a customer does not appear in the staff list', function () {
     $this->get("/admin/staff/{$customer->id}")->assertNotFound();
 });
 
+test('a super admin can view the customers list and both a registered and a guest customer', function () {
+    actingAsFilamentAdmin();
+
+    $customer = User::factory()->create();
+    $customer->assignRole('customer');
+    Address::factory()->for($customer)->create();
+    Order::factory()->create(['user_id' => $customer->id, 'address_id' => null]);
+
+    Order::factory()->create(['user_id' => null, 'address_id' => null, 'recipient_phone' => '01799999999']);
+
+    $this->get('/admin/customers')->assertOk();
+
+    $registered = Customer::where('type', 'registered')->where('user_id', $customer->id)->firstOrFail();
+    $guest = Customer::where('type', 'guest')->where('phone', '01799999999')->firstOrFail();
+
+    $this->get("/admin/customers/{$registered->id}")->assertOk();
+    $this->get("/admin/customers/{$guest->id}")->assertOk();
+});
+
+test('an order manager can view customers but a catalog manager cannot', function () {
+    actingAsFilamentAdmin('order-manager');
+    $this->get('/admin/customers')->assertOk();
+
+    actingAsFilamentAdmin('catalog-manager');
+    $this->get('/admin/customers')->assertForbidden();
+});
+
 test('the dashboard renders with its widgets', function () {
     actingAsFilamentAdmin();
-    \App\Models\Order::factory()->create(['status' => 'delivered', 'total' => 500]);
-    \App\Models\ProductVariant::factory()->create(['stock_quantity' => 1]);
+    Order::factory()->create(['status' => 'delivered', 'total' => 500]);
+    ProductVariant::factory()->create(['stock_quantity' => 1]);
 
     $this->get('/admin')->assertOk();
 });

@@ -6,9 +6,10 @@ use App\Models\Category;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
@@ -38,7 +39,7 @@ class ProductForm
     }
 
     /**
-     * @return array<int, \Filament\Schemas\Components\Component>
+     * @return array<int, Component>
      */
     protected static function generalFields(): array
     {
@@ -140,7 +141,7 @@ class ProductForm
     }
 
     /**
-     * @return array<int, \Filament\Schemas\Components\Component>
+     * @return array<int, Component>
      */
     protected static function pricingFields(): array
     {
@@ -180,7 +181,7 @@ class ProductForm
     }
 
     /**
-     * @return array<int, \Filament\Schemas\Components\Component>
+     * @return array<int, Component>
      */
     protected static function organizationFields(): array
     {
@@ -194,6 +195,23 @@ class ProductForm
             Select::make('tags')
                 ->label('Tags')
                 ->relationship('tags', 'name')
+                ->multiple()
+                ->searchable()
+                ->preload()
+                ->createOptionForm([
+                    TextInput::make('name')
+                        ->required()
+                        ->maxLength(255)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
+                    TextInput::make('slug')
+                        ->required()
+                        ->maxLength(255)
+                        ->unique(ignoreRecord: true),
+                ]),
+            Select::make('concerns')
+                ->label('Skin concerns')
+                ->relationship('concerns', 'name')
                 ->multiple()
                 ->searchable()
                 ->preload()
@@ -253,7 +271,7 @@ class ProductForm
     }
 
     /**
-     * @return array<int, \Filament\Schemas\Components\Component>
+     * @return array<int, Component>
      */
     protected static function seoFields(): array
     {

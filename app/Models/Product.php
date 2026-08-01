@@ -85,6 +85,14 @@ class Product extends Model
     }
 
     /**
+     * @return BelongsToMany<Concern, $this>
+     */
+    public function concerns(): BelongsToMany
+    {
+        return $this->belongsToMany(Concern::class);
+    }
+
+    /**
      * @return BelongsToMany<Label, $this>
      */
     public function labels(): BelongsToMany

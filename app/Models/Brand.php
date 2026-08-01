@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'logo', 'is_active'])]
+#[Fillable(['name', 'slug', 'logo', 'is_active', 'is_featured', 'sort_order'])]
 class Brand extends Model
 {
     /** @use HasFactory<BrandFactory> */
@@ -21,6 +21,7 @@ class Brand extends Model
     {
         return [
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
         ];
     }
 

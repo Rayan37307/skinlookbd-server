@@ -29,6 +29,12 @@ class BrandForm
                     ->directory('brands'),
                 Toggle::make('is_active')
                     ->default(true),
+                Toggle::make('is_featured')
+                    ->label('Show in homepage brand strip'),
+                TextInput::make('sort_order')
+                    ->numeric()
+                    ->default(0)
+                    ->required(),
             ]);
     }
 }

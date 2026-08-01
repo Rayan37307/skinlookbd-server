@@ -32,6 +32,11 @@ class CategoriesTable
                 ImageColumn::make('image'),
                 IconColumn::make('is_active')
                     ->boolean(),
+                IconColumn::make('is_featured')
+                    ->label('Featured')
+                    ->boolean(),
+                TextColumn::make('sort_order')
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -41,8 +46,10 @@ class CategoriesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('sort_order')
             ->filters([
                 TernaryFilter::make('is_active'),
+                TernaryFilter::make('is_featured'),
             ])
             ->recordActions([
                 ViewAction::make(),

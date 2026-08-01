@@ -26,6 +26,8 @@ class SiteMediaSettings extends Page implements HasForms
 
     protected static string|UnitEnum|null $navigationGroup = 'Appearance';
 
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $navigationLabel = 'Media';
 
     protected static ?string $title = 'Appearance / Media';

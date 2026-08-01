@@ -20,6 +20,8 @@ class CartItemResource extends JsonResource
             'id' => $this->id,
             'product_variant_id' => $variant->id,
             'product_name' => $variant->product->name,
+            'product_slug' => $variant->product->slug,
+            'image' => $variant->product->images->first()?->url(),
             'sku' => $variant->sku,
             'size_label' => $variant->size_label,
             'unit_price' => $variant->price,

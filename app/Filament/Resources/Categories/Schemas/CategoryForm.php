@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Categories\Schemas;
 
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
@@ -37,6 +37,12 @@ class CategoryForm
                     ->directory('categories'),
                 Toggle::make('is_active')
                     ->default(true),
+                Toggle::make('is_featured')
+                    ->label("Show in homepage 'Shop by Category' section"),
+                TextInput::make('sort_order')
+                    ->numeric()
+                    ->default(0)
+                    ->required(),
             ]);
     }
 }

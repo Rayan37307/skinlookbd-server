@@ -46,6 +46,10 @@ class ProductController extends Controller
             $query->whereHas('tags', fn ($q) => $q->where('slug', $tag));
         }
 
+        if ($concern = $request->string('concern')->value()) {
+            $query->whereHas('concerns', fn ($q) => $q->where('slug', $concern));
+        }
+
         if ($label = $request->string('label')->value()) {
             $query->whereHas('labels', fn ($q) => $q->where('slug', $label));
         }

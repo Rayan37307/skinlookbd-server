@@ -21,6 +21,8 @@ class ReviewResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Reviews';
 
+    protected static ?int $navigationSort = 1;
+
     public static function infolist(Schema $schema): Schema
     {
         return ReviewInfolist::configure($schema);

@@ -89,7 +89,7 @@ class CartController extends Controller
 
     private function respondWithCart(Cart $cart): JsonResponse
     {
-        $cart->load('items.productVariant.product');
+        $cart->load('items.productVariant.product.images');
 
         $response = response()->json(['cart' => new CartResource($cart)]);
 

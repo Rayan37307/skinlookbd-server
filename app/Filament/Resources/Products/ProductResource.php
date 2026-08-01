@@ -26,6 +26,8 @@ class ProductResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Catalog';
 
+    protected static ?int $navigationSort = 1;
+
     public static function form(Schema $schema): Schema
     {
         return ProductForm::configure($schema);
