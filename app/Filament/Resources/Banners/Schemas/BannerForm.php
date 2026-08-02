@@ -6,6 +6,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 
 class BannerForm
@@ -19,13 +20,22 @@ class BannerForm
                     ->helperText('Used as the image alt text — not shown on the slide itself.')
                     ->required()
                     ->maxLength(255),
-                FileUpload::make('image')
-                    ->label('Slide image')
-                    ->helperText('Recommended 1920×500 (or similar wide aspect ratio) — it\'s cropped to fill the banner on all screen sizes.')
-                    ->image()
-                    ->disk('public')
-                    ->directory('banners')
-                    ->required(),
+                Grid::make(2)
+                    ->schema([
+                        FileUpload::make('image')
+                            ->label('Desktop image')
+                            ->helperText('Recommended 1920×500 (wide aspect ratio) — cropped to fill the banner.')
+                            ->image()
+                            ->disk('public')
+                            ->directory('banners')
+                            ->required(),
+                        FileUpload::make('mobile_image')
+                            ->label('Mobile image (optional)')
+                            ->helperText('A narrower, taller crop (roughly 4:3) for phone screens. Falls back to the desktop image if left empty.')
+                            ->image()
+                            ->disk('public')
+                            ->directory('banners'),
+                    ]),
                 TextInput::make('link_url')
                     ->label('Link URL')
                     ->url()

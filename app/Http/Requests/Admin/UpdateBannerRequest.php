@@ -25,6 +25,7 @@ class UpdateBannerRequest extends FormRequest
         return [
             'title' => ['sometimes', 'string', 'max:255'],
             'image' => ['sometimes', 'image', 'max:4096'],
+            'mobile_image' => ['nullable', 'image', 'max:4096'],
             'link_url' => ['nullable', 'string', 'max:2048'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'starts_at' => ['nullable', 'date'],

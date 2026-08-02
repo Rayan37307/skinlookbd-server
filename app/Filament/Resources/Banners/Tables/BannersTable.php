@@ -21,7 +21,12 @@ class BannersTable
             ->defaultSort('sort_order')
             ->columns([
                 ImageColumn::make('image')
+                    ->label('Desktop')
                     ->disk('public'),
+                ImageColumn::make('mobile_image')
+                    ->label('Mobile')
+                    ->disk('public')
+                    ->placeholder('—'),
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('link_url')

@@ -15,7 +15,12 @@ class BannerInfolist
             ->components([
                 TextEntry::make('title'),
                 ImageEntry::make('image')
+                    ->label('Desktop image')
                     ->disk('public'),
+                ImageEntry::make('mobile_image')
+                    ->label('Mobile image')
+                    ->disk('public')
+                    ->placeholder('-'),
                 TextEntry::make('link_url')
                     ->placeholder('-'),
                 TextEntry::make('sort_order')

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['title', 'image', 'link_url', 'sort_order', 'starts_at', 'expires_at', 'is_active'])]
+#[Fillable(['title', 'image', 'mobile_image', 'link_url', 'sort_order', 'starts_at', 'expires_at', 'is_active'])]
 class Banner extends Model
 {
     /** @use HasFactory<BannerFactory> */
@@ -19,6 +19,9 @@ class Banner extends Model
     {
         static::deleting(function (Banner $banner) {
             Storage::disk('public')->delete($banner->image);
+            if ($banner->mobile_image) {
+                Storage::disk('public')->delete($banner->mobile_image);
+            }
         });
     }
 
