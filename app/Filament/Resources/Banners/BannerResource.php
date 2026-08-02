@@ -22,9 +22,15 @@ class BannerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Promotions';
+    protected static string|\UnitEnum|null $navigationGroup = 'Appearance';
 
     protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'Hero Slides';
+
+    protected static ?string $modelLabel = 'hero slide';
+
+    protected static ?string $pluralModelLabel = 'hero slides';
 
     public static function form(Schema $schema): Schema
     {

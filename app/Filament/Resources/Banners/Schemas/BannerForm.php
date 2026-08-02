@@ -15,9 +15,13 @@ class BannerForm
         return $schema
             ->components([
                 TextInput::make('title')
+                    ->label('Title')
+                    ->helperText('Used as the image alt text — not shown on the slide itself.')
                     ->required()
                     ->maxLength(255),
                 FileUpload::make('image')
+                    ->label('Slide image')
+                    ->helperText('Recommended 1920×500 (or similar wide aspect ratio) — it\'s cropped to fill the banner on all screen sizes.')
                     ->image()
                     ->disk('public')
                     ->directory('banners')

@@ -11,7 +11,6 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -45,8 +44,6 @@ class SiteMediaSettings extends Page implements HasForms
 
         [$logoImage, $logoUrl] = $this->splitImagePath($records->get('logo')?->image_path);
         [$footerLogoImage, $footerLogoUrl] = $this->splitImagePath($records->get('footer_logo')?->image_path);
-        [$desktopImage, $desktopUrl] = $this->splitImagePath($records->get('hero_banner_desktop')?->image_path);
-        [$mobileImage, $mobileUrl] = $this->splitImagePath($records->get('hero_banner_mobile')?->image_path);
         [$footerImage, $footerUrl] = $this->splitImagePath($records->get('footer_ribbon')?->image_path);
 
         $this->form->fill([
@@ -54,12 +51,6 @@ class SiteMediaSettings extends Page implements HasForms
             'logo_image_url' => $logoUrl,
             'footer_logo_image' => $footerLogoImage,
             'footer_logo_image_url' => $footerLogoUrl,
-            'hero_banner_desktop_image' => $desktopImage,
-            'hero_banner_desktop_image_url' => $desktopUrl,
-            'hero_banner_mobile_image' => $mobileImage,
-            'hero_banner_mobile_image_url' => $mobileUrl,
-            'hero_banner_link_url' => $records->get('hero_banner_desktop')?->link_url,
-            'hero_banner_is_active' => $records->get('hero_banner_desktop')?->is_active ?? true,
             'footer_ribbon_image' => $footerImage,
             'footer_ribbon_image_url' => $footerUrl,
             'footer_ribbon_is_active' => $records->get('footer_ribbon')?->is_active ?? true,
@@ -97,28 +88,6 @@ class SiteMediaSettings extends Page implements HasForms
                         $urlField('footer_logo_image_url'),
                     ]),
 
-                Section::make('Hero Banner')
-                    ->description('Desktop is 1920×500. Mobile is a narrower, taller crop (roughly 4:3) — use the desktop image as a size reference.')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                $imageField('hero_banner_desktop_image', 'Desktop (1920×500)'),
-                                $imageField('hero_banner_mobile_image', 'Mobile (~4:3 crop)'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                $urlField('hero_banner_desktop_image_url'),
-                                $urlField('hero_banner_mobile_image_url'),
-                            ]),
-                        TextInput::make('hero_banner_link_url')
-                            ->label('Link URL')
-                            ->url()
-                            ->maxLength(2048),
-                        Toggle::make('hero_banner_is_active')
-                            ->label('Show hero banner section')
-                            ->default(true),
-                    ]),
-
                 Section::make('Footer Ribbon')
                     ->schema([
                         $imageField('footer_ribbon_image', 'Footer ribbon'),
@@ -147,27 +116,6 @@ class SiteMediaSettings extends Page implements HasForms
             uploadedPath: $state['footer_logo_image'] ?? null,
             externalUrl: $state['footer_logo_image_url'] ?? null,
             isActive: true,
-        );
-
-        $heroIsActive = (bool) ($state['hero_banner_is_active'] ?? true);
-        $heroLinkUrl = $state['hero_banner_link_url'] ?? null;
-
-        $this->persistSlot(
-            key: 'hero_banner_desktop',
-            uploadedPath: $state['hero_banner_desktop_image'] ?? null,
-            externalUrl: $state['hero_banner_desktop_image_url'] ?? null,
-            isActive: $heroIsActive,
-            linkUrl: $heroLinkUrl,
-            updateLinkUrl: true,
-        );
-
-        $this->persistSlot(
-            key: 'hero_banner_mobile',
-            uploadedPath: $state['hero_banner_mobile_image'] ?? null,
-            externalUrl: $state['hero_banner_mobile_image_url'] ?? null,
-            isActive: $heroIsActive,
-            linkUrl: $heroLinkUrl,
-            updateLinkUrl: true,
         );
 
         $this->persistSlot(

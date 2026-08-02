@@ -25,16 +25,6 @@ return [
             'label' => 'Footer Logo',
             'toggleable' => false,
         ],
-        'hero_banner_desktop' => [
-            'label' => 'Hero Banner — Desktop',
-            'toggleable' => true,
-            'group' => 'hero_banner',
-        ],
-        'hero_banner_mobile' => [
-            'label' => 'Hero Banner — Mobile',
-            'toggleable' => true,
-            'group' => 'hero_banner',
-        ],
         'footer_ribbon' => [
             'label' => 'Footer Ribbon',
             'toggleable' => true,
