@@ -21,6 +21,10 @@ return [
             'label' => 'Logo',
             'toggleable' => false,
         ],
+        'footer_logo' => [
+            'label' => 'Footer Logo',
+            'toggleable' => false,
+        ],
         'hero_banner_desktop' => [
             'label' => 'Hero Banner — Desktop',
             'toggleable' => true,

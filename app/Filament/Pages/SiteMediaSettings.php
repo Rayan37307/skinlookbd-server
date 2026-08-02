@@ -44,6 +44,7 @@ class SiteMediaSettings extends Page implements HasForms
         $records = SiteMedia::whereIn('key', array_keys(config('site_media.slots')))->get()->keyBy('key');
 
         [$logoImage, $logoUrl] = $this->splitImagePath($records->get('logo')?->image_path);
+        [$footerLogoImage, $footerLogoUrl] = $this->splitImagePath($records->get('footer_logo')?->image_path);
         [$desktopImage, $desktopUrl] = $this->splitImagePath($records->get('hero_banner_desktop')?->image_path);
         [$mobileImage, $mobileUrl] = $this->splitImagePath($records->get('hero_banner_mobile')?->image_path);
         [$footerImage, $footerUrl] = $this->splitImagePath($records->get('footer_ribbon')?->image_path);
@@ -51,6 +52,8 @@ class SiteMediaSettings extends Page implements HasForms
         $this->form->fill([
             'logo_image' => $logoImage,
             'logo_image_url' => $logoUrl,
+            'footer_logo_image' => $footerLogoImage,
+            'footer_logo_image_url' => $footerLogoUrl,
             'hero_banner_desktop_image' => $desktopImage,
             'hero_banner_desktop_image_url' => $desktopUrl,
             'hero_banner_mobile_image' => $mobileImage,
@@ -85,6 +88,13 @@ class SiteMediaSettings extends Page implements HasForms
                     ->schema([
                         $imageField('logo_image', 'Logo'),
                         $urlField('logo_image_url'),
+                    ]),
+
+                Section::make('Footer Logo')
+                    ->description('Used in the site footer. Falls back to the main logo above if left empty.')
+                    ->schema([
+                        $imageField('footer_logo_image', 'Footer logo'),
+                        $urlField('footer_logo_image_url'),
                     ]),
 
                 Section::make('Hero Banner')
@@ -129,6 +139,13 @@ class SiteMediaSettings extends Page implements HasForms
             key: 'logo',
             uploadedPath: $state['logo_image'] ?? null,
             externalUrl: $state['logo_image_url'] ?? null,
+            isActive: true,
+        );
+
+        $this->persistSlot(
+            key: 'footer_logo',
+            uploadedPath: $state['footer_logo_image'] ?? null,
+            externalUrl: $state['footer_logo_image_url'] ?? null,
             isActive: true,
         );
 
