@@ -16,7 +16,8 @@ class MenuInfolist
                 TextEntry::make('parent.label')
                     ->label('Parent item')
                     ->placeholder('-'),
-                TextEntry::make('label'),
+                TextEntry::make('label')
+                    ->placeholder('-'),
                 TextEntry::make('type')
                     ->badge(),
                 TextEntry::make('target')

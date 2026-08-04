@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Menus\Schemas;
 
 use App\Models\Category;
+use App\Models\Menu;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -24,6 +25,7 @@ class MenuForm
                         'label',
                         fn ($query, $record) => $record ? $query->whereKeyNot($record->id) : $query,
                     )
+                    ->getOptionLabelFromRecordUsing(fn (Menu $record) => $record->label ?: "Untitled (#{$record->id})")
                     ->searchable(),
                 TextInput::make('label')
                     ->maxLength(255),

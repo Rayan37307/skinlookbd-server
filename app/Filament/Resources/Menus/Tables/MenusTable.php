@@ -24,7 +24,8 @@ class MenusTable
             ->defaultSort('sort_order')
             ->columns([
                 TextColumn::make('label')
-                    ->searchable(),
+                    ->searchable()
+                    ->placeholder('-'),
                 TextColumn::make('parent.label')
                     ->label('Parent')
                     ->placeholder('— top level —'),
@@ -46,7 +47,8 @@ class MenusTable
             ->filters([
                 SelectFilter::make('parent_id')
                     ->label('Parent item')
-                    ->options(fn () => Menu::whereNull('parent_id')->orderBy('label')->pluck('label', 'id')),
+                    ->options(fn () => Menu::whereNull('parent_id')->orderBy('label')->get()
+                        ->mapWithKeys(fn (Menu $menu) => [$menu->id => $menu->label ?: "Untitled (#{$menu->id})"])),
                 TernaryFilter::make('is_active'),
             ])
             ->recordActions([

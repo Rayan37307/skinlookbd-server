@@ -138,6 +138,16 @@ test('a super admin can manage menu items', function () {
     $this->get("/admin/menus/{$menu->id}/edit")->assertOk();
 });
 
+test('a top-level menu item with no label does not break the menus admin pages', function () {
+    actingAsFilamentAdmin();
+    $menu = Menu::factory()->create(['label' => null, 'parent_id' => null]);
+
+    $this->get('/admin/menus')->assertOk();
+    $this->get('/admin/menus/create')->assertOk();
+    $this->get("/admin/menus/{$menu->id}")->assertOk();
+    $this->get("/admin/menus/{$menu->id}/edit")->assertOk();
+});
+
 test('the dashboard renders with its widgets', function () {
     actingAsFilamentAdmin();
     Order::factory()->create(['status' => 'delivered', 'total' => 500]);
