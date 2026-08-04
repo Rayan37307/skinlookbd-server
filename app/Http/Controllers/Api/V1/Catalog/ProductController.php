@@ -7,6 +7,7 @@ use App\Http\Requests\Catalog\ProductIndexRequest;
 use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Category;
+use App\Models\Concern;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 
@@ -43,11 +44,23 @@ class ProductController extends Controller
         }
 
         if ($tag = $request->string('tag')->value()) {
-            $query->whereHas('tags', fn ($q) => $q->where('slug', $tag));
+            $query->whereHas('tags', fn ($q) => $q->where('slug', $tag)->orWhere('name', $tag));
         }
 
         if ($concern = $request->string('concern')->value()) {
-            $query->whereHas('concerns', fn ($q) => $q->where('slug', $concern));
+            $matchedConcern = Concern::where('slug', $concern)->first();
+
+            if ($matchedConcern?->category_id) {
+                $categoryIds = Category::where('id', $matchedConcern->category_id)
+                    ->orWhere('parent_id', $matchedConcern->category_id)
+                    ->pluck('id');
+
+                $query->whereIn('category_id', $categoryIds);
+            } elseif ($matchedConcern?->tag_id) {
+                $query->whereHas('tags', fn ($q) => $q->where('id', $matchedConcern->tag_id));
+            } else {
+                $query->whereRaw('0 = 1');
+            }
         }
 
         if ($label = $request->string('label')->value()) {

@@ -7,6 +7,8 @@ use Filament\Widgets\ChartWidget;
 
 class SalesChart extends ChartWidget
 {
+    protected static ?int $sort = 3;
+
     protected ?string $heading = 'Revenue (last 30 days)';
 
     private const REVENUE_STATUSES = ['confirmed', 'processing', 'shipped', 'delivered'];

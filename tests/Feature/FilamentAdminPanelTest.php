@@ -2,12 +2,16 @@
 
 use App\Models\Address;
 use App\Models\Banner;
+use App\Models\Category;
+use App\Models\Concern;
 use App\Models\Coupon;
 use App\Models\Customer;
+use App\Models\Menu;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
 use App\Models\Review;
+use App\Models\Tag;
 use App\Models\User;
 
 function actingAsFilamentAdmin(string $role = 'super-admin'): User
@@ -108,6 +112,30 @@ test('an order manager can view customers but a catalog manager cannot', functio
 
     actingAsFilamentAdmin('catalog-manager');
     $this->get('/admin/customers')->assertForbidden();
+});
+
+test('a super admin can manage concerns linked to a category or a tag', function () {
+    actingAsFilamentAdmin();
+    $category = Category::factory()->create();
+    $tag = Tag::factory()->create();
+    $concernByCategory = Concern::factory()->create(['category_id' => $category->id]);
+    $concernByTag = Concern::factory()->create(['tag_id' => $tag->id]);
+
+    $this->get('/admin/concerns')->assertOk();
+    $this->get('/admin/concerns/create')->assertOk();
+    $this->get("/admin/concerns/{$concernByCategory->id}")->assertOk();
+    $this->get("/admin/concerns/{$concernByCategory->id}/edit")->assertOk();
+    $this->get("/admin/concerns/{$concernByTag->id}/edit")->assertOk();
+});
+
+test('a super admin can manage menu items', function () {
+    actingAsFilamentAdmin();
+    $menu = Menu::factory()->create();
+
+    $this->get('/admin/menus')->assertOk();
+    $this->get('/admin/menus/create')->assertOk();
+    $this->get("/admin/menus/{$menu->id}")->assertOk();
+    $this->get("/admin/menus/{$menu->id}/edit")->assertOk();
 });
 
 test('the dashboard renders with its widgets', function () {

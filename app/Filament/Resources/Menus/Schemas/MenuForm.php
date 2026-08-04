@@ -26,7 +26,6 @@ class MenuForm
                     )
                     ->searchable(),
                 TextInput::make('label')
-                    ->required()
                     ->maxLength(255),
                 Select::make('type')
                     ->options([

@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 class LowStockTable extends TableWidget
 {
+    protected static ?int $sort = 2;
+
+    protected int|string|array $columnSpan = 'full';
+
     protected static ?string $heading = 'Low stock';
 
     public function table(Table $table): Table

@@ -3,9 +3,12 @@
 namespace App\Filament\Resources\Customers\Tables;
 
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CustomersTable
 {
@@ -46,6 +49,16 @@ class CustomersTable
                         'registered' => 'Registered',
                         'guest' => 'Guest',
                     ]),
+                Filter::make('created_at')
+                    ->schema([
+                        DatePicker::make('from'),
+                        DatePicker::make('to'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['from'] ?? null, fn (Builder $q, $date) => $q->whereDate('created_at', '>=', $date))
+                            ->when($data['to'] ?? null, fn (Builder $q, $date) => $q->whereDate('created_at', '<=', $date));
+                    }),
             ])
             ->recordActions([
                 ViewAction::make(),

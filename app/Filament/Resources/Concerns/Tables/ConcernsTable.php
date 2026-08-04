@@ -27,13 +27,16 @@ class ConcernsTable
                     ->searchable(),
                 TextColumn::make('slug')
                     ->searchable(),
+                TextColumn::make('category.name')
+                    ->label('Category')
+                    ->placeholder('-'),
+                TextColumn::make('tag.name')
+                    ->label('Tag')
+                    ->placeholder('-'),
                 ColorColumn::make('color_from')
                     ->label('From'),
                 ColorColumn::make('color_to')
                     ->label('To'),
-                TextColumn::make('products_count')
-                    ->label('Products')
-                    ->counts('products'),
                 IconColumn::make('is_active')
                     ->boolean(),
                 TextColumn::make('sort_order')

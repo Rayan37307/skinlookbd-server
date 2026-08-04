@@ -6,9 +6,9 @@ use Database\Factories\ConcernFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['name', 'slug', 'image', 'color_from', 'color_to', 'is_active', 'sort_order'])]
+#[Fillable(['name', 'slug', 'image', 'color_from', 'color_to', 'category_id', 'tag_id', 'is_active', 'sort_order'])]
 class Concern extends Model
 {
     /** @use HasFactory<ConcernFactory> */
@@ -25,10 +25,18 @@ class Concern extends Model
     }
 
     /**
-     * @return BelongsToMany<Product, $this>
+     * @return BelongsTo<Category, $this>
      */
-    public function products(): BelongsToMany
+    public function category(): BelongsTo
     {
-        return $this->belongsToMany(Product::class);
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return BelongsTo<Tag, $this>
+     */
+    public function tag(): BelongsTo
+    {
+        return $this->belongsTo(Tag::class);
     }
 }

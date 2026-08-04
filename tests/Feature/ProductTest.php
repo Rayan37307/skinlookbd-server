@@ -2,9 +2,11 @@
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Concern;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\SkinType;
+use App\Models\Tag;
 
 test('it only lists active products', function () {
     Product::factory()->count(2)->create(['status' => 'active']);
@@ -29,6 +31,46 @@ test('it filters products by category including its children', function () {
 
     $response->assertOk();
     expect($response->json('meta.total'))->toBe(2);
+});
+
+test('it filters products by a concern linked to a category, including children', function () {
+    $parent = Category::factory()->create();
+    $child = Category::factory()->create(['parent_id' => $parent->id]);
+    $other = Category::factory()->create();
+    $concern = Concern::factory()->create(['category_id' => $parent->id]);
+
+    Product::factory()->for($parent)->create();
+    Product::factory()->for($child)->create();
+    Product::factory()->for($other)->create();
+
+    $response = $this->getJson("/api/v1/products?concern={$concern->slug}");
+
+    $response->assertOk();
+    expect($response->json('meta.total'))->toBe(2);
+});
+
+test('it filters products by a concern linked to a tag', function () {
+    $tag = Tag::factory()->create();
+    $concern = Concern::factory()->create(['tag_id' => $tag->id]);
+
+    $matching = Product::factory()->create();
+    $matching->tags()->attach($tag);
+    Product::factory()->create();
+
+    $response = $this->getJson("/api/v1/products?concern={$concern->slug}");
+
+    $response->assertOk();
+    expect($response->json('meta.total'))->toBe(1);
+});
+
+test('a concern with no linked category or tag matches no products', function () {
+    $concern = Concern::factory()->create();
+    Product::factory()->count(3)->create();
+
+    $response = $this->getJson("/api/v1/products?concern={$concern->slug}");
+
+    $response->assertOk();
+    expect($response->json('meta.total'))->toBe(0);
 });
 
 test('it filters products by skin type', function () {

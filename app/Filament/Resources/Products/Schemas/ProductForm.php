@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Models\Category;
+use App\Models\Product;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -10,8 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
@@ -19,26 +19,41 @@ use Illuminate\Support\Str;
 
 class ProductForm
 {
+    /**
+     * Every native text/textarea input on this form gets this inline style so the field is
+     * comfortably bigger to type into — inline styles are used (rather than utility classes)
+     * because they reliably win over the Tailwind classes baked into Filament's own input
+     * markup, which utility classes of equal specificity are not guaranteed to do.
+     */
+    private const string INPUT_STYLE = 'font-size: 1rem; padding-top: 0.875rem; padding-bottom: 0.875rem;';
+
+    private const string SELECT_STYLE = 'min-height: 3.25rem; font-size: 1rem;';
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Tabs::make('Product')
-                    ->columnSpanFull()
-                    ->tabs([
-                        Tab::make('General')
-                            ->components(self::generalFields()),
-                        Tab::make('Pricing & Inventory')
-                            ->components(self::pricingFields()),
-                        Tab::make('Organization')
-                            ->components(self::organizationFields()),
-                        Tab::make('SEO')
-                            ->components(self::seoFields()),
-                    ]),
+                Section::make('General')
+                    ->columns(2)
+                    ->schema(self::generalFields()),
+                Section::make('Pricing & Inventory')
+                    ->columns(2)
+                    ->schema(self::pricingFields()),
+                Section::make('Organization')
+                    ->columns(2)
+                    ->schema(self::organizationFields()),
+                Section::make('SEO')
+                    ->columns(2)
+                    ->schema(self::seoFields()),
             ]);
     }
 
     /**
+     * Nothing on this form is required — admins can save a product with as little as a name
+     * (or nothing at all) and fill in the rest later. See ProductForm::applyFallbackDefaults()
+     * for the safety net that fills in whatever the database still needs (name, slug,
+     * category, price) when a field is left blank.
+     *
      * @return array<int, Component>
      */
     protected static function generalFields(): array
@@ -56,7 +71,7 @@ class ProductForm
                 })
                 ->afterStateUpdated(fn (callable $set) => $set('category_id', null))
                 ->searchable()
-                ->required(),
+                ->extraAttributes(['style' => self::SELECT_STYLE]),
             Select::make('category_id')
                 ->label('Subcategory')
                 ->options(function (callable $get) {
@@ -76,27 +91,29 @@ class ProductForm
                         ]);
                 })
                 ->searchable()
-                ->required(),
+                ->extraAttributes(['style' => self::SELECT_STYLE]),
             TextInput::make('name')
-                ->required()
                 ->maxLength(255)
                 ->live(onBlur: true)
-                ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
+                ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state)))
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             TextInput::make('slug')
-                ->required()
                 ->maxLength(255)
                 ->live(onBlur: true)
-                ->unique(ignoreRecord: true),
+                ->unique(ignoreRecord: true)
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             TextInput::make('sku')
                 ->label('SKU')
                 ->helperText('Only used for products without variants.')
                 ->maxLength(255)
-                ->unique(ignoreRecord: true),
+                ->unique(ignoreRecord: true)
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             Select::make('brand_id')
                 ->label('Brand')
                 ->relationship('brand', 'name')
                 ->searchable()
                 ->preload()
+                ->extraAttributes(['style' => self::SELECT_STYLE])
                 ->createOptionForm([
                     TextInput::make('name')
                         ->required()
@@ -110,21 +127,24 @@ class ProductForm
                 ]),
             Textarea::make('short_description')
                 ->rows(2)
-                ->columnSpanFull(),
+                ->columnSpanFull()
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             Textarea::make('description')
                 ->label('Full description')
-                ->columnSpanFull(),
+                ->columnSpanFull()
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             Textarea::make('ingredients')
-                ->columnSpanFull(),
+                ->columnSpanFull()
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             Repeater::make('additional_information')
                 ->label('Additional information')
                 ->schema([
                     TextInput::make('label')
-                        ->required()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->extraInputAttributes(['style' => self::INPUT_STYLE]),
                     TextInput::make('value')
-                        ->required()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->extraInputAttributes(['style' => self::INPUT_STYLE]),
                 ])
                 ->columns(2)
                 ->addActionLabel('Add row')
@@ -135,8 +155,8 @@ class ProductForm
                     'active' => 'Active',
                     'archived' => 'Archived',
                 ])
-                ->required()
-                ->default('draft'),
+                ->default('draft')
+                ->extraAttributes(['style' => self::SELECT_STYLE]),
         ];
     }
 
@@ -148,22 +168,24 @@ class ProductForm
         return [
             TextInput::make('base_price')
                 ->label('Regular price (BDT)')
-                ->required()
                 ->numeric()
                 ->minValue(0)
-                ->prefix('৳'),
+                ->prefix('৳')
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             TextInput::make('sale_price')
                 ->label('Sale price (BDT)')
                 ->numeric()
                 ->minValue(0)
                 ->lt('base_price')
-                ->prefix('৳'),
+                ->prefix('৳')
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             TextInput::make('cost_price')
                 ->label('Cost price (BDT)')
                 ->helperText('Hidden from customers — used for profit calculation only.')
                 ->numeric()
                 ->minValue(0)
-                ->prefix('৳'),
+                ->prefix('৳')
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             Toggle::make('track_inventory')
                 ->label('Track inventory')
                 ->default(true)
@@ -174,7 +196,8 @@ class ProductForm
                 ->numeric()
                 ->minValue(0)
                 ->default(0)
-                ->visible(fn (Get $get) => (bool) $get('track_inventory')),
+                ->visible(fn (Get $get) => (bool) $get('track_inventory'))
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             Toggle::make('free_shipping')
                 ->default(false),
         ];
@@ -191,30 +214,15 @@ class ProductForm
                 ->relationship('skinTypes', 'name')
                 ->multiple()
                 ->searchable()
-                ->preload(),
+                ->preload()
+                ->extraAttributes(['style' => self::SELECT_STYLE]),
             Select::make('tags')
                 ->label('Tags')
                 ->relationship('tags', 'name')
                 ->multiple()
                 ->searchable()
                 ->preload()
-                ->createOptionForm([
-                    TextInput::make('name')
-                        ->required()
-                        ->maxLength(255)
-                        ->live(onBlur: true)
-                        ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
-                    TextInput::make('slug')
-                        ->required()
-                        ->maxLength(255)
-                        ->unique(ignoreRecord: true),
-                ]),
-            Select::make('concerns')
-                ->label('Skin concerns')
-                ->relationship('concerns', 'name')
-                ->multiple()
-                ->searchable()
-                ->preload()
+                ->extraAttributes(['style' => self::SELECT_STYLE])
                 ->createOptionForm([
                     TextInput::make('name')
                         ->required()
@@ -232,6 +240,7 @@ class ProductForm
                 ->multiple()
                 ->searchable()
                 ->preload()
+                ->extraAttributes(['style' => self::SELECT_STYLE])
                 ->createOptionForm([
                     TextInput::make('name')
                         ->required()
@@ -266,7 +275,8 @@ class ProductForm
                 )
                 ->multiple()
                 ->searchable()
-                ->preload(),
+                ->preload()
+                ->extraAttributes(['style' => self::SELECT_STYLE]),
         ];
     }
 
@@ -278,17 +288,21 @@ class ProductForm
         return [
             TextInput::make('meta_title')
                 ->maxLength(255)
-                ->live(onBlur: true),
+                ->live(onBlur: true)
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             Textarea::make('meta_description')
                 ->rows(2)
                 ->maxLength(500)
-                ->live(onBlur: true),
+                ->live(onBlur: true)
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             TextInput::make('focus_keyword')
-                ->maxLength(255),
+                ->maxLength(255)
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             TextInput::make('canonical_url')
                 ->label('Canonical URL')
                 ->url()
-                ->maxLength(255),
+                ->maxLength(255)
+                ->extraInputAttributes(['style' => self::INPUT_STYLE]),
             Placeholder::make('seo_preview')
                 ->label('Search engine listing preview')
                 ->live()
@@ -308,5 +322,48 @@ class ProductForm
                 })
                 ->columnSpanFull(),
         ];
+    }
+
+    /**
+     * Fills in whatever the `products` table still requires (name, slug, category, price) when
+     * the form was submitted with those left blank, since nothing on this form is a required
+     * field. Mirrors the fallback category/slug logic already used by ProductImporter.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public static function applyFallbackDefaults(array $data): array
+    {
+        $data['name'] = filled($data['name'] ?? null) ? $data['name'] : 'Untitled product';
+
+        if (blank($data['slug'] ?? null)) {
+            $data['slug'] = self::uniqueSlug(Str::slug($data['name']) ?: 'product');
+        }
+
+        $data['base_price'] = $data['base_price'] ?? 0;
+
+        if (blank($data['category_id'] ?? null)) {
+            $data['category_id'] = Category::firstOrCreate(
+                ['slug' => 'uncategorized'],
+                ['name' => 'Uncategorized', 'is_active' => true],
+            )->id;
+        }
+
+        $data['status'] = $data['status'] ?? 'draft';
+
+        return $data;
+    }
+
+    private static function uniqueSlug(string $base): string
+    {
+        $slug = $base;
+        $suffix = 2;
+
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = "{$base}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
     }
 }

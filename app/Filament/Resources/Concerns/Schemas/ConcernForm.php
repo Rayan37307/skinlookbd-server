@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Concerns\Schemas;
 
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -24,6 +25,22 @@ class ConcernForm
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
+                Select::make('category_id')
+                    ->label('Linked category')
+                    ->relationship('category', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->helperText('Clicking this concern shows products from this category (and its subcategories).')
+                    ->afterStateUpdated(fn (callable $set, $state) => $state ? $set('tag_id', null) : null),
+                Select::make('tag_id')
+                    ->label('Linked tag')
+                    ->relationship('tag', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->helperText('Clicking this concern shows products with this tag. Leave blank if a category is set above.')
+                    ->afterStateUpdated(fn (callable $set, $state) => $state ? $set('category_id', null) : null),
                 FileUpload::make('image')
                     ->image()
                     ->disk('public')

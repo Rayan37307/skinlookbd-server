@@ -15,6 +15,12 @@ class ConcernInfolist
             ->components([
                 TextEntry::make('name'),
                 TextEntry::make('slug'),
+                TextEntry::make('category.name')
+                    ->label('Linked category')
+                    ->placeholder('-'),
+                TextEntry::make('tag.name')
+                    ->label('Linked tag')
+                    ->placeholder('-'),
                 ImageEntry::make('image')
                     ->placeholder('-'),
                 TextEntry::make('color_from')

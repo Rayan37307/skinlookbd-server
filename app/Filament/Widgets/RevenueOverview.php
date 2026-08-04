@@ -10,6 +10,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class RevenueOverview extends StatsOverviewWidget
 {
+    protected static ?int $sort = 1;
+
     private const REVENUE_STATUSES = ['confirmed', 'processing', 'shipped', 'delivered'];
 
     protected function getStats(): array
@@ -24,7 +26,8 @@ class RevenueOverview extends StatsOverviewWidget
             Stat::make('Pending orders', Order::where('status', 'pending')->count())
                 ->color('gray'),
             Stat::make('Low stock variants', ProductVariant::where('stock_quantity', '<=', 5)->count())
-                ->color('warning'),
+                ->color(ProductVariant::where('stock_quantity', 0)->exists() ? 'danger' : 'warning')
+                ->description('At or below 5 units in stock'),
         ];
     }
 
