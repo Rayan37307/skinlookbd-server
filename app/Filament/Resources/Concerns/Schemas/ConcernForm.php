@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Concerns\Schemas;
 
+use App\Filament\Support\ImageOrUrlField;
 use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -41,11 +41,7 @@ class ConcernForm
                     ->live()
                     ->helperText('Clicking this concern shows products with this tag. Leave blank if a category is set above.')
                     ->afterStateUpdated(fn (callable $set, $state) => $state ? $set('category_id', null) : null),
-                FileUpload::make('image')
-                    ->image()
-                    ->disk('public')
-                    ->directory('concerns')
-                    ->helperText('Optional. Falls back to the gradient colors below when left blank.'),
+                ...ImageOrUrlField::make('image', 'concerns', helperText: 'Optional. Falls back to the gradient colors below when left blank.'),
                 ColorPicker::make('color_from')
                     ->label('Gradient start color')
                     ->default('#e8c6a0'),

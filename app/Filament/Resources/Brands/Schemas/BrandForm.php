@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Brands\Schemas;
 
-use Filament\Forms\Components\FileUpload;
+use App\Filament\Support\ImageOrUrlField;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -23,10 +23,7 @@ class BrandForm
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
-                FileUpload::make('logo')
-                    ->image()
-                    ->disk('public')
-                    ->directory('brands'),
+                ...ImageOrUrlField::make('logo', 'brands'),
                 Toggle::make('is_active')
                     ->default(true),
                 Toggle::make('is_featured')

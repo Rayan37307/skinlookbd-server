@@ -9,7 +9,9 @@ use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Concern;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @group Catalog
@@ -22,6 +24,28 @@ class ProductController extends Controller
      * Browse active products with filtering, search, sorting, and pagination.
      */
     public function index(ProductIndexRequest $request): JsonResponse
+    {
+        $products = $this->buildQuery($request)->paginate($request->integer('per_page', 15));
+
+        // MySQL FULLTEXT search silently drops words shorter than its minimum indexed word
+        // length (and stopwords), which can turn a real match into a false empty result. When
+        // that happens, retry once with a plain LIKE scan so correctness never depends on the
+        // hosting box's ft_min_word_len/stopword configuration.
+        if ($products->total() === 0 && $request->filled('search') && DB::connection()->getDriverName() === 'mysql') {
+            $products = $this->buildQuery($request, forceLikeSearch: true)->paginate($request->integer('per_page', 15));
+        }
+
+        return response()->json([
+            'products' => ProductResource::collection($products),
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'total' => $products->total(),
+            ],
+        ]);
+    }
+
+    private function buildQuery(ProductIndexRequest $request, bool $forceLikeSearch = false): Builder
     {
         $query = Product::active()->with(['category.parent', 'brand', 'images', 'variants', 'tags', 'labels']);
 
@@ -84,8 +108,9 @@ class ProductController extends Controller
         }
 
         if ($search = $request->string('search')->value()) {
-            $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
-                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$search}%")));
+            $forceLikeSearch || DB::connection()->getDriverName() !== 'mysql'
+                ? $this->applyLikeSearch($query, $search)
+                : $this->applyFullTextSearch($query, $search);
         }
 
         match ($request->string('sort')->value()) {
@@ -95,16 +120,42 @@ class ProductController extends Controller
             default => $query->orderBy('name'),
         };
 
-        $products = $query->paginate($request->integer('per_page', 15));
+        return $query;
+    }
 
-        return response()->json([
-            'products' => ProductResource::collection($products),
-            'meta' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'total' => $products->total(),
-            ],
-        ]);
+    /**
+     * Index-accelerated search: MySQL FULLTEXT with boolean-mode prefix matching on each word
+     * (e.g. "cera moist" -> +cera* +moist*), so results narrow as the user keeps typing without
+     * ever falling back to a full table scan for the common case.
+     */
+    private function applyFullTextSearch(Builder $query, string $search): void
+    {
+        // Strip MySQL boolean-mode operators so user input can't be misread as query syntax.
+        $words = array_filter(
+            preg_split('/\s+/', trim(preg_replace('/[+\-<>()~*"@:]/', ' ', $search))),
+            fn ($word) => $word !== '',
+        );
+
+        // Nothing left to match on (e.g. the search was pure punctuation) — LIKE is the only
+        // option left, and MATCH AGAINST('') would otherwise error.
+        if ($words === []) {
+            $this->applyLikeSearch($query, $search);
+
+            return;
+        }
+
+        $boolean = implode(' ', array_map(fn ($word) => '+'.$word.'*', $words));
+
+        $query->where(function ($q) use ($boolean, $search) {
+            $q->whereRaw('MATCH(name) AGAINST(? IN BOOLEAN MODE)', [$boolean])
+                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$search}%"));
+        });
+    }
+
+    private function applyLikeSearch(Builder $query, string $search): void
+    {
+        $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
+            ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$search}%")));
     }
 
     /**

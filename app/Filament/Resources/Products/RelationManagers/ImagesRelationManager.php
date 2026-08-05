@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use App\Filament\Support\ImageOrUrlField;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -20,6 +20,8 @@ class ImagesRelationManager extends RelationManager
 
     public function form(Schema $schema): Schema
     {
+        [$imageUpload, $imageUrl] = ImageOrUrlField::make('path', 'products', label: 'Image');
+
         return $schema
             ->components([
                 Select::make('type')
@@ -30,13 +32,12 @@ class ImagesRelationManager extends RelationManager
                     ->default('image')
                     ->live()
                     ->required(),
-                FileUpload::make('path')
-                    ->label('Image')
-                    ->image()
-                    ->disk('public')
-                    ->directory('products')
+                $imageUpload
                     ->visible(fn (Get $get) => $get('type') === 'image')
-                    ->required(fn (Get $get) => $get('type') === 'image'),
+                    ->required(fn (Get $get) => $get('type') === 'image' && blank($get('path_url'))),
+                $imageUrl
+                    ->visible(fn (Get $get) => $get('type') === 'image')
+                    ->required(fn (Get $get) => $get('type') === 'image' && blank($get('path'))),
                 TextInput::make('path')
                     ->label('Video URL')
                     ->url()
@@ -73,10 +74,13 @@ class ImagesRelationManager extends RelationManager
                 TextColumn::make('sort_order'),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->mutateFormDataUsing(fn (array $data): array => ImageOrUrlField::combine($data, 'path')),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->mutateRecordDataUsing(fn (array $data): array => ImageOrUrlField::split($data, 'path'))
+                    ->mutateFormDataUsing(fn (array $data): array => ImageOrUrlField::combine($data, 'path')),
                 DeleteAction::make(),
             ]);
     }

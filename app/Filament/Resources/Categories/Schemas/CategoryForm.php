@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Categories\Schemas;
 
-use Filament\Forms\Components\FileUpload;
+use App\Filament\Support\ImageOrUrlField;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -31,10 +31,7 @@ class CategoryForm
                     ->unique(ignoreRecord: true),
                 Textarea::make('description')
                     ->columnSpanFull(),
-                FileUpload::make('image')
-                    ->image()
-                    ->disk('public')
-                    ->directory('categories'),
+                ...ImageOrUrlField::make('image', 'categories'),
                 Toggle::make('is_active')
                     ->default(true),
                 Toggle::make('is_featured')
