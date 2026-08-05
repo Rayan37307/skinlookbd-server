@@ -65,8 +65,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::prefix('cart')->name('cart.')->group(function () {
         Route::get('/', [CartController::class, 'show'])->name('show');
         Route::post('items', [CartController::class, 'store'])->name('items.store');
-        Route::patch('items', [CartController::class, 'update'])->name('items.update');
-        Route::delete('items', [CartController::class, 'destroy'])->name('items.destroy');
+        Route::patch('items/{productVariant}', [CartController::class, 'update'])->name('items.update');
+        Route::delete('items/{productVariant}', [CartController::class, 'destroy'])->name('items.destroy');
     });
 
     Route::post('coupons/validate', [CouponController::class, 'validateCoupon'])

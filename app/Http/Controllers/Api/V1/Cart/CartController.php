@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1\Cart;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cart\AddCartItemRequest;
-use App\Http\Requests\Cart\RemoveCartItemRequest;
 use App\Http\Requests\Cart\UpdateCartItemRequest;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
@@ -62,17 +61,17 @@ class CartController extends Controller
     /**
      * Update a cart item's quantity
      *
-     * Identifies the item by `product_variant_id` rather than a cart-item id, since a cart
-     * can only ever hold one row per variant — the frontend never needs to track or reuse an
-     * internal row id that could otherwise go stale (e.g. across a guest-to-account merge).
+     * Identifies the item by `product_variant_id` in the URL rather than a cart-item id, since
+     * a cart can only ever hold one row per variant — the frontend never needs to track or
+     * reuse an internal row id that could otherwise go stale (e.g. across a guest-to-account
+     * merge).
      */
-    public function update(UpdateCartItemRequest $request): JsonResponse
+    public function update(UpdateCartItemRequest $request, ProductVariant $productVariant): JsonResponse
     {
         $cart = $this->carts->resolve($request);
-        $variant = ProductVariant::findOrFail($request->integer('product_variant_id'));
-        $item = $cart->items()->where('product_variant_id', $variant->id)->firstOrFail();
+        $item = $cart->items()->where('product_variant_id', $productVariant->id)->firstOrFail();
 
-        abort_if($request->integer('quantity') > $variant->stock_quantity, 422, 'Not enough stock available.');
+        abort_if($request->integer('quantity') > $productVariant->stock_quantity, 422, 'Not enough stock available.');
 
         $item->update(['quantity' => $request->integer('quantity')]);
 
@@ -82,14 +81,15 @@ class CartController extends Controller
     /**
      * Remove a cart item
      *
-     * Identified by `product_variant_id` (see update()). Removing a variant that isn't in the
-     * cart is a no-op, not an error — the caller's goal ("this variant isn't in my cart") is
-     * already true, so there's no failure state to report.
+     * Identified by `product_variant_id` in the URL (see update()) — deliberately not a request
+     * body, since some servers/PHP setups don't reliably deliver a body on DELETE requests, and
+     * a URL segment has no such ambiguity. Removing a variant that isn't in the cart is a
+     * no-op, not an error: the caller's goal ("this variant isn't in my cart") is already true.
      */
-    public function destroy(RemoveCartItemRequest $request): JsonResponse
+    public function destroy(Request $request, ProductVariant $productVariant): JsonResponse
     {
         $cart = $this->carts->resolve($request);
-        $cart->items()->where('product_variant_id', $request->integer('product_variant_id'))->delete();
+        $cart->items()->where('product_variant_id', $productVariant->id)->delete();
 
         return $this->respondWithCart($cart);
     }
