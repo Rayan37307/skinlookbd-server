@@ -30,7 +30,7 @@ test('a guest can remove a cart item by product_variant_id using the cart token'
     $token = $addResponse->headers->get('X-Cart-Token');
 
     $removeResponse = $this->withHeader('X-Cart-Token', $token)
-        ->deleteJson('/api/v1/cart/items', ['product_variant_id' => $variant->id]);
+        ->deleteJson("/api/v1/cart/items/{$variant->id}");
 
     $removeResponse->assertOk();
     expect($removeResponse->json('cart.items'))->toHaveCount(0);
@@ -51,7 +51,7 @@ test('removing a variant that is not in the cart is a harmless no-op, not an err
     // brand-new empty cart) — either way the caller's goal ("it's not in my cart") is already
     // true, so this succeeds instead of 404ing.
     $response = $this->withHeader('X-Cart-Token', $token)
-        ->deleteJson('/api/v1/cart/items', ['product_variant_id' => $otherVariant->id]);
+        ->deleteJson("/api/v1/cart/items/{$otherVariant->id}");
 
     $response->assertOk();
     expect($response->json('cart.items'))->toHaveCount(1);
@@ -100,7 +100,7 @@ test('a user can update a cart item quantity by product_variant_id', function ()
 
     $this->postJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 1]);
 
-    $response = $this->patchJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 5]);
+    $response = $this->patchJson("/api/v1/cart/items/{$variant->id}", ['quantity' => 5]);
 
     $response->assertOk();
     expect($response->json('cart.items.0.quantity'))->toBe(5);
@@ -110,8 +110,7 @@ test('updating a variant that is not in the cart 404s', function () {
     actingAsUser();
     $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
 
-    $this->patchJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 2])
-        ->assertNotFound();
+    $this->patchJson("/api/v1/cart/items/{$variant->id}", ['quantity' => 2])->assertNotFound();
 });
 
 test('a user can remove a cart item by product_variant_id', function () {
@@ -120,7 +119,7 @@ test('a user can remove a cart item by product_variant_id', function () {
 
     $this->postJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 1]);
 
-    $response = $this->deleteJson('/api/v1/cart/items', ['product_variant_id' => $variant->id]);
+    $response = $this->deleteJson("/api/v1/cart/items/{$variant->id}");
 
     $response->assertOk();
     expect($response->json('cart.items'))->toHaveCount(0);
@@ -136,9 +135,8 @@ test("a user cannot remove or update another user's cart item, because it's simp
 
     // The request always operates on the caller's own resolved cart — there's no id to smuggle
     // a reference to someone else's cart item through anymore.
-    $this->patchJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 2])
-        ->assertNotFound();
-    $this->deleteJson('/api/v1/cart/items', ['product_variant_id' => $variant->id])->assertOk();
+    $this->patchJson("/api/v1/cart/items/{$variant->id}", ['quantity' => 2])->assertNotFound();
+    $this->deleteJson("/api/v1/cart/items/{$variant->id}")->assertOk();
 
     expect($otherCart->fresh()->items()->count())->toBe(1);
 });
@@ -164,7 +162,7 @@ test('after a guest cart merges into a user on login, removal still works with j
     // request resolves to the real account cart.
     $removeResponse = $this->withHeader('Authorization', "Bearer {$authToken}")
         ->withHeader('X-Cart-Token', $staleGuestToken)
-        ->deleteJson('/api/v1/cart/items', ['product_variant_id' => $variant->id]);
+        ->deleteJson("/api/v1/cart/items/{$variant->id}");
 
     $removeResponse->assertOk();
     expect($removeResponse->json('cart.items'))->toHaveCount(0);

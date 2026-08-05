@@ -69,8 +69,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('items/{productVariant}', [CartController::class, 'destroy'])->name('items.destroy');
     });
 
+    // Guest-friendly, same as the cart routes above — coupon preview doesn't require an
+    // account, and the controller already resolves the cart and coupon eligibility for a
+    // nullable user.
     Route::post('coupons/validate', [CouponController::class, 'validateCoupon'])
-        ->middleware('auth:sanctum')
         ->name('coupons.validate');
 
     Route::get('shipping/estimate', ShippingEstimateController::class)->name('shipping.estimate');

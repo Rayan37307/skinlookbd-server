@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 /**
  * @group Cart
  *
- * @authenticated
+ * Works for both guests and authenticated customers, same as the cart endpoints.
  */
 class CouponController extends Controller
 {

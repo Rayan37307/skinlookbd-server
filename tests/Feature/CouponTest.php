@@ -3,8 +3,18 @@
 use App\Models\Coupon;
 use App\Models\ProductVariant;
 
-test('guests cannot validate a coupon', function () {
-    $this->postJson('/api/v1/coupons/validate', ['code' => 'ANY'])->assertUnauthorized();
+test('a guest can validate a coupon, same as an authenticated user', function () {
+    $variant = ProductVariant::factory()->create(['price_override' => 1000, 'stock_quantity' => 10]);
+    $addResponse = $this->postJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 1]);
+    $token = $addResponse->headers->get('X-Cart-Token');
+
+    Coupon::factory()->create(['code' => 'SAVE20', 'discount_type' => 'percent', 'discount_value' => 20]);
+
+    $response = $this->withHeader('X-Cart-Token', $token)->postJson('/api/v1/coupons/validate', ['code' => 'save20']);
+
+    $response->assertOk();
+    expect($response->json('discount'))->toBe(200);
+    expect($response->json('total'))->toBe(800);
 });
 
 test('a valid coupon returns the computed discount', function () {
