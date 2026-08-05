@@ -33,7 +33,16 @@ class CartService
             return;
         }
 
-        $userCart = $this->cartForUser($user);
+        $userCart = Cart::where('user_id', $user->id)->first();
+
+        if (! $userCart) {
+            // No pre-existing account cart to reconcile with — the guest cart just becomes the
+            // account's cart. This keeps every item's id unchanged, which is what avoids the
+            // whole class of "cart item vanished/404s after login" bugs: nothing was recreated.
+            $guestCart->update(['user_id' => $user->id, 'session_token' => null]);
+
+            return;
+        }
 
         foreach ($guestCart->items as $guestItem) {
             $existing = $userCart->items()->where('product_variant_id', $guestItem->product_variant_id)->first();

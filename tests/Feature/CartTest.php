@@ -190,3 +190,52 @@ test('a guest cart is merged into the user cart on login', function () {
     expect($userCart->items()->sum('quantity'))->toBe(2);
     expect(Cart::whereNull('user_id')->count())->toBe(0);
 });
+
+test('logging in with no pre-existing account cart adopts the guest cart, keeping item ids unchanged', function () {
+    $user = User::factory()->create(['password' => bcrypt('password123')]);
+    $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
+
+    $guestResponse = $this->postJson('/api/v1/cart/items', [
+        'product_variant_id' => $variant->id,
+        'quantity' => 1,
+    ]);
+    $token = $guestResponse->headers->get('X-Cart-Token');
+    $guestCartId = $guestResponse->json('cart.id');
+    $guestItemId = $guestResponse->json('cart.items.0.id');
+
+    $this->withHeader('X-Cart-Token', $token)->postJson('/api/v1/auth/login', [
+        'login' => $user->email,
+        'password' => 'password123',
+    ])->assertOk();
+
+    $userCart = Cart::where('user_id', $user->id)->first();
+
+    // Same cart row, same item row — just re-owned, nothing recreated.
+    expect($userCart->id)->toBe($guestCartId);
+    expect($userCart->items()->first()->id)->toBe($guestItemId);
+});
+
+test('logging in with an existing account cart still merges the guest cart into it', function () {
+    $user = User::factory()->create(['password' => bcrypt('password123')]);
+    $existingVariant = ProductVariant::factory()->create(['stock_quantity' => 10]);
+    $guestVariant = ProductVariant::factory()->create(['stock_quantity' => 10]);
+
+    $existingCart = Cart::factory()->for($user)->create();
+    $existingCart->items()->create(['product_variant_id' => $existingVariant->id, 'quantity' => 1]);
+
+    $guestResponse = $this->postJson('/api/v1/cart/items', [
+        'product_variant_id' => $guestVariant->id,
+        'quantity' => 1,
+    ]);
+    $token = $guestResponse->headers->get('X-Cart-Token');
+    $guestCartId = $guestResponse->json('cart.id');
+
+    $this->withHeader('X-Cart-Token', $token)->postJson('/api/v1/auth/login', [
+        'login' => $user->email,
+        'password' => 'password123',
+    ])->assertOk();
+
+    expect(Cart::where('user_id', $user->id)->count())->toBe(1);
+    expect(Cart::find($existingCart->id)->items()->count())->toBe(2);
+    expect(Cart::find($guestCartId))->toBeNull();
+});
