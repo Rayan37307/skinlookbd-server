@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\V1\Cart;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cart\AddCartItemRequest;
+use App\Http\Requests\Cart\RemoveCartItemRequest;
 use App\Http\Requests\Cart\UpdateCartItemRequest;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\ProductVariant;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
@@ -61,28 +61,35 @@ class CartController extends Controller
 
     /**
      * Update a cart item's quantity
+     *
+     * Identifies the item by `product_variant_id` rather than a cart-item id, since a cart
+     * can only ever hold one row per variant — the frontend never needs to track or reuse an
+     * internal row id that could otherwise go stale (e.g. across a guest-to-account merge).
      */
-    public function update(UpdateCartItemRequest $request, CartItem $cartItem): JsonResponse
+    public function update(UpdateCartItemRequest $request): JsonResponse
     {
         $cart = $this->carts->resolve($request);
-        abort_unless($cartItem->cart_id === $cart->id, 404);
+        $variant = ProductVariant::findOrFail($request->integer('product_variant_id'));
+        $item = $cart->items()->where('product_variant_id', $variant->id)->firstOrFail();
 
-        abort_if($request->integer('quantity') > $cartItem->productVariant->stock_quantity, 422, 'Not enough stock available.');
+        abort_if($request->integer('quantity') > $variant->stock_quantity, 422, 'Not enough stock available.');
 
-        $cartItem->update(['quantity' => $request->integer('quantity')]);
+        $item->update(['quantity' => $request->integer('quantity')]);
 
         return $this->respondWithCart($cart);
     }
 
     /**
      * Remove a cart item
+     *
+     * Identified by `product_variant_id` (see update()). Removing a variant that isn't in the
+     * cart is a no-op, not an error — the caller's goal ("this variant isn't in my cart") is
+     * already true, so there's no failure state to report.
      */
-    public function destroy(Request $request, CartItem $cartItem): JsonResponse
+    public function destroy(RemoveCartItemRequest $request): JsonResponse
     {
         $cart = $this->carts->resolve($request);
-        abort_unless($cartItem->cart_id === $cart->id, 404);
-
-        $cartItem->delete();
+        $cart->items()->where('product_variant_id', $request->integer('product_variant_id'))->delete();
 
         return $this->respondWithCart($cart);
     }

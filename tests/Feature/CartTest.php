@@ -20,7 +20,7 @@ test('a guest can add an item to their cart and receives a cart token', function
     expect($response->json('cart.items.0.quantity'))->toBe(2);
 });
 
-test('a guest can remove a cart item using the cart token', function () {
+test('a guest can remove a cart item by product_variant_id using the cart token', function () {
     $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
 
     $addResponse = $this->postJson('/api/v1/cart/items', [
@@ -28,26 +28,33 @@ test('a guest can remove a cart item using the cart token', function () {
         'quantity' => 1,
     ]);
     $token = $addResponse->headers->get('X-Cart-Token');
-    $itemId = $addResponse->json('cart.items.0.id');
 
-    $removeResponse = $this->withHeader('X-Cart-Token', $token)->deleteJson("/api/v1/cart/items/{$itemId}");
+    $removeResponse = $this->withHeader('X-Cart-Token', $token)
+        ->deleteJson('/api/v1/cart/items', ['product_variant_id' => $variant->id]);
 
     $removeResponse->assertOk();
     expect($removeResponse->json('cart.items'))->toHaveCount(0);
 });
 
-test('removing a guest cart item without the matching cart token 404s', function () {
+test('removing a variant that is not in the cart is a harmless no-op, not an error', function () {
     $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
 
     $addResponse = $this->postJson('/api/v1/cart/items', [
         'product_variant_id' => $variant->id,
         'quantity' => 1,
     ]);
-    $itemId = $addResponse->json('cart.items.0.id');
+    $token = $addResponse->headers->get('X-Cart-Token');
 
-    // No X-Cart-Token header sent — simulates a lost/cleared/mismatched guest token, which
-    // resolves to a brand-new empty cart rather than the one the item actually belongs to.
-    $this->deleteJson("/api/v1/cart/items/{$itemId}")->assertNotFound();
+    $otherVariant = ProductVariant::factory()->create(['stock_quantity' => 10]);
+
+    // No matching row for $otherVariant in this cart (or, without the token, resolves to a
+    // brand-new empty cart) — either way the caller's goal ("it's not in my cart") is already
+    // true, so this succeeds instead of 404ing.
+    $response = $this->withHeader('X-Cart-Token', $token)
+        ->deleteJson('/api/v1/cart/items', ['product_variant_id' => $otherVariant->id]);
+
+    $response->assertOk();
+    expect($response->json('cart.items'))->toHaveCount(1);
 });
 
 test('a guest cart persists across requests using the cart token', function () {
@@ -87,33 +94,56 @@ test("an authenticated user's cart is tied to their account, not a token", funct
     expect(Cart::first()->user_id)->not->toBeNull();
 });
 
-test('a user can update a cart item quantity', function () {
+test('a user can update a cart item quantity by product_variant_id', function () {
     actingAsUser();
     $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
 
     $this->postJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 1]);
-    $cartItemId = Cart::first()->items()->first()->id;
 
-    $response = $this->patchJson("/api/v1/cart/items/{$cartItemId}", ['quantity' => 5]);
+    $response = $this->patchJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 5]);
 
     $response->assertOk();
     expect($response->json('cart.items.0.quantity'))->toBe(5);
 });
 
-test('a user can remove a cart item', function () {
+test('updating a variant that is not in the cart 404s', function () {
+    actingAsUser();
+    $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
+
+    $this->patchJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 2])
+        ->assertNotFound();
+});
+
+test('a user can remove a cart item by product_variant_id', function () {
     actingAsUser();
     $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
 
     $this->postJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 1]);
-    $cartItemId = Cart::first()->items()->first()->id;
 
-    $response = $this->deleteJson("/api/v1/cart/items/{$cartItemId}");
+    $response = $this->deleteJson('/api/v1/cart/items', ['product_variant_id' => $variant->id]);
 
     $response->assertOk();
     expect($response->json('cart.items'))->toHaveCount(0);
 });
 
-test('after a guest cart merges into a user on login, the account cart still works with just the auth token', function () {
+test("a user cannot remove or update another user's cart item, because it's simply not reachable", function () {
+    $other = User::factory()->create();
+    $otherCart = Cart::factory()->for($other)->create();
+    $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
+    $otherCart->items()->create(['product_variant_id' => $variant->id, 'quantity' => 1]);
+
+    actingAsUser();
+
+    // The request always operates on the caller's own resolved cart — there's no id to smuggle
+    // a reference to someone else's cart item through anymore.
+    $this->patchJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 2])
+        ->assertNotFound();
+    $this->deleteJson('/api/v1/cart/items', ['product_variant_id' => $variant->id])->assertOk();
+
+    expect($otherCart->fresh()->items()->count())->toBe(1);
+});
+
+test('after a guest cart merges into a user on login, removal still works with just the auth token', function () {
     $user = User::factory()->create(['password' => bcrypt('password123')]);
     $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
 
@@ -131,18 +161,10 @@ test('after a guest cart merges into a user on login, the account cart still wor
 
     // A client that (bug) still sends the now-stale guest token alongside the auth token, e.g.
     // because it was never cleared after login — the auth token must take priority so the
-    // request resolves to the real account cart, not a nonexistent/mismatched guest one.
-    $cartResponse = $this->withHeader('Authorization', "Bearer {$authToken}")
-        ->withHeader('X-Cart-Token', $staleGuestToken)
-        ->getJson('/api/v1/cart');
-
-    $cartResponse->assertOk();
-    expect($cartResponse->json('cart.items'))->toHaveCount(1);
-    $mergedItemId = $cartResponse->json('cart.items.0.id');
-
+    // request resolves to the real account cart.
     $removeResponse = $this->withHeader('Authorization', "Bearer {$authToken}")
         ->withHeader('X-Cart-Token', $staleGuestToken)
-        ->deleteJson("/api/v1/cart/items/{$mergedItemId}");
+        ->deleteJson('/api/v1/cart/items', ['product_variant_id' => $variant->id]);
 
     $removeResponse->assertOk();
     expect($removeResponse->json('cart.items'))->toHaveCount(0);
@@ -156,17 +178,6 @@ test('a user never ends up with two cart rows even if firstOrCreate races', func
     // Simulate a second concurrent request finding no cart yet and trying to create one too.
     expect(fn () => Cart::create(['user_id' => $user->id]))->toThrow(QueryException::class);
     expect(Cart::where('user_id', $user->id)->count())->toBe(1);
-});
-
-test("a user cannot modify another user's cart item", function () {
-    $other = User::factory()->create();
-    $otherCart = Cart::factory()->for($other)->create();
-    $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
-    $item = $otherCart->items()->create(['product_variant_id' => $variant->id, 'quantity' => 1]);
-
-    actingAsUser();
-
-    $this->patchJson("/api/v1/cart/items/{$item->id}", ['quantity' => 2])->assertNotFound();
 });
 
 test('a guest cart is merged into the user cart on login', function () {
@@ -238,4 +249,18 @@ test('logging in with an existing account cart still merges the guest cart into 
     expect(Cart::where('user_id', $user->id)->count())->toBe(1);
     expect(Cart::find($existingCart->id)->items()->count())->toBe(2);
     expect(Cart::find($guestCartId))->toBeNull();
+});
+
+test('adding the same variant twice increments quantity instead of creating a second row', function () {
+    $variant = ProductVariant::factory()->create(['stock_quantity' => 10]);
+
+    $first = $this->postJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 1]);
+    $token = $first->headers->get('X-Cart-Token');
+
+    $response = $this->withHeader('X-Cart-Token', $token)
+        ->postJson('/api/v1/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 1]);
+
+    $response->assertOk();
+    expect($response->json('cart.items'))->toHaveCount(1);
+    expect($response->json('cart.items.0.quantity'))->toBe(2);
 });
