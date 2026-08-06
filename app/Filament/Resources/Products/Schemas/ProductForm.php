@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Filament\Support\ImageOrUrlField;
+use App\Filament\Support\ProductImageFields;
 use App\Models\Category;
 use App\Models\Product;
 use Filament\Forms\Components\Placeholder;
@@ -36,6 +38,9 @@ class ProductForm
                 Section::make('General')
                     ->columns(2)
                     ->schema(self::generalFields()),
+                Section::make('Images')
+                    ->description('Add photos or videos now — no need to save the product first.')
+                    ->schema(self::imageFields()),
                 Section::make('Pricing & Inventory')
                     ->columns(2)
                     ->schema(self::pricingFields()),
@@ -157,6 +162,31 @@ class ProductForm
                 ])
                 ->default('draft')
                 ->extraAttributes(['style' => self::SELECT_STYLE]),
+        ];
+    }
+
+    /**
+     * Backed by the same `images` hasMany relationship as ImagesRelationManager (which only
+     * appears once the product record already exists) — this repeater lets an admin attach
+     * images in the same submission that creates the product, saved via Filament's standard
+     * relationship-repeater flow (parent record first, then these rows).
+     *
+     * @return array<int, Component>
+     */
+    protected static function imageFields(): array
+    {
+        return [
+            Repeater::make('images')
+                ->label('')
+                ->relationship('images')
+                ->schema(ProductImageFields::make())
+                ->mutateRelationshipDataBeforeFillUsing(fn (array $data): array => ImageOrUrlField::split($data, 'path'))
+                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): array => ImageOrUrlField::combine($data, 'path'))
+                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => ImageOrUrlField::combine($data, 'path'))
+                ->columns(2)
+                ->addActionLabel('Add image')
+                ->collapsible()
+                ->columnSpanFull(),
         ];
     }
 

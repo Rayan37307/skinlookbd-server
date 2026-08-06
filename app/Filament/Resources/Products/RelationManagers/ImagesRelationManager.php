@@ -3,13 +3,11 @@
 namespace App\Filament\Resources\Products\RelationManagers;
 
 use App\Filament\Support\ImageOrUrlField;
+use App\Filament\Support\ProductImageFields;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -20,37 +18,7 @@ class ImagesRelationManager extends RelationManager
 
     public function form(Schema $schema): Schema
     {
-        [$imageUpload, $imageUrl] = ImageOrUrlField::make('path', 'products', label: 'Image');
-
-        return $schema
-            ->components([
-                Select::make('type')
-                    ->options([
-                        'image' => 'Image',
-                        'video' => 'Video',
-                    ])
-                    ->default('image')
-                    ->live()
-                    ->required(),
-                $imageUpload
-                    ->visible(fn (Get $get) => $get('type') === 'image')
-                    ->required(fn (Get $get) => $get('type') === 'image' && blank($get('path_url'))),
-                $imageUrl
-                    ->visible(fn (Get $get) => $get('type') === 'image')
-                    ->required(fn (Get $get) => $get('type') === 'image' && blank($get('path'))),
-                TextInput::make('path')
-                    ->label('Video URL')
-                    ->url()
-                    ->visible(fn (Get $get) => $get('type') === 'video')
-                    ->required(fn (Get $get) => $get('type') === 'video'),
-                TextInput::make('alt')
-                    ->label('Alt text')
-                    ->maxLength(255),
-                TextInput::make('sort_order')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-            ]);
+        return $schema->components(ProductImageFields::make());
     }
 
     public function table(Table $table): Table

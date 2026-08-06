@@ -6,6 +6,7 @@ use App\Filament\Resources\Brands\Pages\CreateBrand;
 use App\Filament\Resources\Brands\Pages\EditBrand;
 use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
+use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Support\ImageOrUrlField;
 use App\Models\Banner;
 use App\Models\Brand;
@@ -128,6 +129,24 @@ test('editing a banner with URL-based images pre-fills both url fields, not the 
             'mobile_image' => null,
             'mobile_image_url' => 'https://example.com/existing-mobile.jpg',
         ]);
+});
+
+test('an admin can attach an image to a brand-new product without saving it first', function () {
+    actingAsFilamentAdminForImages();
+
+    Livewire::test(CreateProduct::class)
+        ->fillForm([
+            'name' => 'New Serum',
+            'images' => [
+                ['type' => 'image', 'path_url' => 'https://example.com/new-serum.jpg', 'sort_order' => 0],
+            ],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $product = Product::where('slug', 'new-serum')->firstOrFail();
+    expect($product->images()->count())->toBe(1);
+    expect($product->images()->first()->path)->toBe('https://example.com/new-serum.jpg');
 });
 
 test('a product edit page with its images relation manager renders fine', function () {
