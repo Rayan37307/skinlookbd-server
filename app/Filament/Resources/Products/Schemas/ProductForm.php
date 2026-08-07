@@ -153,6 +153,7 @@ class ProductForm
         return [
             FileUpload::make('image_gallery')
                 ->label('')
+                ->helperText('The first photo is used as the cover image — drag thumbnails to reorder.')
                 ->image()
                 ->multiple()
                 ->reorderable()
@@ -161,6 +162,35 @@ class ProductForm
                 ->imagePreviewHeight('160')
                 ->disk('public')
                 ->directory('products')
+                ->extraAttributes(['class' => 'skinlook-image-gallery'])
+                ->columnSpanFull(),
+            // A pure-CSS "Cover" badge pinned to the gallery's top-left corner, which is always
+            // where the first thumbnail sits — safer than resizing it, since the upload widget's
+            // grid layout is computed by its JS library and not something CSS can safely resize
+            // per item without risking overlapping tiles. :has() hides the badge when empty.
+            Placeholder::make('image_gallery_cover_badge_style')
+                ->hiddenLabel()
+                ->content(new HtmlString(<<<'HTML'
+                    <style>
+                        .skinlook-image-gallery { position: relative; }
+                        .skinlook-image-gallery:has(.filepond--item)::before {
+                            content: 'Cover';
+                            position: absolute;
+                            top: 0.5rem;
+                            left: 0.5rem;
+                            z-index: 20;
+                            padding: 0.125rem 0.625rem;
+                            font-size: 0.7rem;
+                            font-weight: 600;
+                            color: #fff;
+                            background: rgba(0, 0, 0, 0.65);
+                            border-radius: 9999px;
+                            pointer-events: none;
+                        }
+                    </style>
+                    HTML
+                ))
+                ->extraAttributes(['class' => 'hidden'])
                 ->columnSpanFull(),
         ];
     }

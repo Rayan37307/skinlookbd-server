@@ -37,7 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('favicon.ico'))
             ->font('Instrument Sans')
-            ->darkMode()
+            ->darkMode(false)
             ->login()
             ->sidebarCollapsibleOnDesktop()
             ->spa()
