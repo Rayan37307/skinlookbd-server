@@ -14,6 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -33,72 +34,52 @@ class ProductForm
 
     private const string SELECT_STYLE = 'min-height: 3.25rem; font-size: 1rem;';
 
+    /**
+     * Two-column "dashboard" layout, mirroring Shopify's product page: the main content (title,
+     * media, pricing) on the left, a narrow sidebar (status, organization) on the right. Nothing
+     * on this form is required — admins can save a product with as little as a name (or nothing
+     * at all) and fill in the rest later. See applyFallbackDefaults() for the safety net that
+     * fills in whatever the database still needs (name, slug, category, price) when a field is
+     * left blank.
+     */
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(3)
             ->components([
-                Section::make('General')
-                    ->columns(2)
-                    ->schema(self::generalFields()),
-                Section::make('Images')
-                    ->description('Add photos or videos now — no need to save the product first. Drag the handle to reorder.')
-                    ->schema(self::imageFields()),
-                Section::make('Pricing & Inventory')
-                    ->columns(2)
-                    ->schema(self::pricingFields()),
-                Section::make('Organization')
-                    ->columns(2)
-                    ->schema(self::organizationFields()),
-                Section::make('SEO')
-                    ->columns(2)
-                    ->schema(self::seoFields()),
+                Group::make()
+                    ->columnSpan(2)
+                    ->schema([
+                        Section::make('General')
+                            ->columns(2)
+                            ->schema(self::generalFields()),
+                        Section::make('Images')
+                            ->description('Add photos or videos now — no need to save the product first. Drag the handle to reorder.')
+                            ->schema(self::imageFields()),
+                        Section::make('Pricing & Inventory')
+                            ->columns(2)
+                            ->schema(self::pricingFields()),
+                        Section::make('SEO')
+                            ->columns(2)
+                            ->schema(self::seoFields()),
+                    ]),
+                Group::make()
+                    ->columnSpan(1)
+                    ->schema([
+                        Section::make('Status')
+                            ->schema(self::statusFields()),
+                        Section::make('Organization')
+                            ->schema(self::organizationFields()),
+                    ]),
             ]);
     }
 
     /**
-     * Nothing on this form is required — admins can save a product with as little as a name
-     * (or nothing at all) and fill in the rest later. See ProductForm::applyFallbackDefaults()
-     * for the safety net that fills in whatever the database still needs (name, slug,
-     * category, price) when a field is left blank.
-     *
      * @return array<int, Component>
      */
     protected static function generalFields(): array
     {
         return [
-            Select::make('category_group_id')
-                ->label('Category')
-                ->options(fn () => Category::whereNull('parent_id')->orderBy('name')->pluck('name', 'id'))
-                ->dehydrated(false)
-                ->live()
-                ->afterStateHydrated(function (Select $component, $record) {
-                    if ($record?->category) {
-                        $component->state($record->category->parent_id ?? $record->category->id);
-                    }
-                })
-                ->afterStateUpdated(fn (callable $set) => $set('category_id', null))
-                ->searchable()
-                ->extraAttributes(['style' => self::SELECT_STYLE]),
-            Select::make('category_id')
-                ->label('Subcategory')
-                ->options(function (callable $get) {
-                    $parentId = $get('category_group_id');
-
-                    if (! $parentId) {
-                        return [];
-                    }
-
-                    return Category::where('id', $parentId)
-                        ->orWhere('parent_id', $parentId)
-                        ->orderByRaw('parent_id is not null')
-                        ->orderBy('name')
-                        ->get()
-                        ->mapWithKeys(fn (Category $category) => [
-                            $category->id => $category->parent_id ? $category->name : "{$category->name} (General)",
-                        ]);
-                })
-                ->searchable()
-                ->extraAttributes(['style' => self::SELECT_STYLE]),
             TextInput::make('name')
                 ->maxLength(255)
                 ->live(onBlur: true)
@@ -114,24 +95,8 @@ class ProductForm
                 ->helperText('Only used for products without variants.')
                 ->maxLength(255)
                 ->unique(ignoreRecord: true)
+                ->columnSpanFull()
                 ->extraInputAttributes(['style' => self::INPUT_STYLE]),
-            Select::make('brand_id')
-                ->label('Brand')
-                ->relationship('brand', 'name')
-                ->searchable()
-                ->preload()
-                ->extraAttributes(['style' => self::SELECT_STYLE])
-                ->createOptionForm([
-                    TextInput::make('name')
-                        ->required()
-                        ->maxLength(255)
-                        ->live(onBlur: true)
-                        ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
-                    TextInput::make('slug')
-                        ->required()
-                        ->maxLength(255)
-                        ->unique(ignoreRecord: true),
-                ]),
             Textarea::make('short_description')
                 ->rows(2)
                 ->columnSpanFull()
@@ -156,6 +121,15 @@ class ProductForm
                 ->columns(2)
                 ->addActionLabel('Add row')
                 ->columnSpanFull(),
+        ];
+    }
+
+    /**
+     * @return array<int, Component>
+     */
+    protected static function statusFields(): array
+    {
+        return [
             Select::make('status')
                 ->options([
                     'draft' => 'Draft',
@@ -289,6 +263,56 @@ class ProductForm
     protected static function organizationFields(): array
     {
         return [
+            Select::make('category_group_id')
+                ->label('Category')
+                ->options(fn () => Category::whereNull('parent_id')->orderBy('name')->pluck('name', 'id'))
+                ->dehydrated(false)
+                ->live()
+                ->afterStateHydrated(function (Select $component, $record) {
+                    if ($record?->category) {
+                        $component->state($record->category->parent_id ?? $record->category->id);
+                    }
+                })
+                ->afterStateUpdated(fn (callable $set) => $set('category_id', null))
+                ->searchable()
+                ->extraAttributes(['style' => self::SELECT_STYLE]),
+            Select::make('category_id')
+                ->label('Subcategory')
+                ->options(function (callable $get) {
+                    $parentId = $get('category_group_id');
+
+                    if (! $parentId) {
+                        return [];
+                    }
+
+                    return Category::where('id', $parentId)
+                        ->orWhere('parent_id', $parentId)
+                        ->orderByRaw('parent_id is not null')
+                        ->orderBy('name')
+                        ->get()
+                        ->mapWithKeys(fn (Category $category) => [
+                            $category->id => $category->parent_id ? $category->name : "{$category->name} (General)",
+                        ]);
+                })
+                ->searchable()
+                ->extraAttributes(['style' => self::SELECT_STYLE]),
+            Select::make('brand_id')
+                ->label('Brand')
+                ->relationship('brand', 'name')
+                ->searchable()
+                ->preload()
+                ->extraAttributes(['style' => self::SELECT_STYLE])
+                ->createOptionForm([
+                    TextInput::make('name')
+                        ->required()
+                        ->maxLength(255)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
+                    TextInput::make('slug')
+                        ->required()
+                        ->maxLength(255)
+                        ->unique(ignoreRecord: true),
+                ]),
             Select::make('skinTypes')
                 ->label('Skin types')
                 ->relationship('skinTypes', 'name')
