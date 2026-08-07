@@ -6,6 +6,8 @@ use App\Filament\Support\ImageOrUrlField;
 use App\Filament\Support\ProductImageFields;
 use App\Models\Category;
 use App\Models\Product;
+use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -15,6 +17,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -39,7 +42,8 @@ class ProductForm
                     ->columns(2)
                     ->schema(self::generalFields()),
                 Section::make('Images')
-                    ->description('Add photos or videos now — no need to save the product first.')
+                    ->description('Add photos or videos now — no need to save the product first. Drag the handle to reorder.')
+                    ->headerActions([self::bulkUploadAction()])
                     ->schema(self::imageFields()),
                 Section::make('Pricing & Inventory')
                     ->columns(2)
@@ -171,6 +175,9 @@ class ProductForm
      * images in the same submission that creates the product, saved via Filament's standard
      * relationship-repeater flow (parent record first, then these rows).
      *
+     * Nothing in a row is required, so combineImageRowOrSkip() drops any row an admin added but
+     * left without an upload, URL, or video link, rather than blocking the save.
+     *
      * @return array<int, Component>
      */
     protected static function imageFields(): array
@@ -179,15 +186,69 @@ class ProductForm
             Repeater::make('images')
                 ->label('')
                 ->relationship('images')
-                ->schema(ProductImageFields::make())
+                ->schema(ProductImageFields::make(requireMediaSource: false))
                 ->mutateRelationshipDataBeforeFillUsing(fn (array $data): array => ImageOrUrlField::split($data, 'path'))
-                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): array => ImageOrUrlField::combine($data, 'path'))
-                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => ImageOrUrlField::combine($data, 'path'))
+                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): ?array => self::combineImageRowOrSkip($data))
+                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): ?array => self::combineImageRowOrSkip($data))
+                ->orderColumn('sort_order')
                 ->columns(2)
                 ->addActionLabel('Add image')
                 ->collapsible()
                 ->columnSpanFull(),
         ];
+    }
+
+    /**
+     * Header action on the Images section that lets an admin drop in several image files at
+     * once instead of clicking "Add image" and uploading them one row at a time — each uploaded
+     * file becomes its own row in the `images` repeater, appended after whatever's already there.
+     */
+    private static function bulkUploadAction(): Action
+    {
+        return Action::make('bulkUploadImages')
+            ->label('Bulk upload')
+            ->modalHeading('Bulk upload images')
+            ->modalSubmitActionLabel('Add images')
+            ->schema([
+                FileUpload::make('files')
+                    ->label('Images')
+                    ->image()
+                    ->multiple()
+                    ->disk('public')
+                    ->directory('products')
+                    ->reorderable()
+                    ->required(),
+            ])
+            ->action(function (array $data, Get $get, Set $set): void {
+                $items = $get('images') ?? [];
+
+                foreach ($data['files'] as $path) {
+                    $items[(string) Str::uuid()] = [
+                        'type' => 'image',
+                        'path' => $path,
+                        'path_url' => null,
+                        'alt' => null,
+                        'sort_order' => 0,
+                    ];
+                }
+
+                $set('images', $items);
+            });
+    }
+
+    /**
+     * Returns null (which Filament's repeater treats as "skip this row") when the row has no
+     * image upload, image URL, or video link — so an admin can add a blank image row without it
+     * blocking the save with a validation error or persisting an empty record.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>|null
+     */
+    private static function combineImageRowOrSkip(array $data): ?array
+    {
+        $data = ImageOrUrlField::combine($data, 'path');
+
+        return blank($data['path'] ?? null) ? null : $data;
     }
 
     /**
