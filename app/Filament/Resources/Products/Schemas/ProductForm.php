@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
-use App\Filament\Support\ImageOrUrlField;
-use App\Filament\Support\ProductImageFields;
 use App\Models\Category;
 use App\Models\Product;
 use Filament\Forms\Components\FileUpload;
@@ -17,7 +15,6 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -54,7 +51,7 @@ class ProductForm
                             ->columns(2)
                             ->schema(self::generalFields()),
                         Section::make('Images')
-                            ->description('Add photos or videos now — no need to save the product first. Drag the handle to reorder.')
+                            ->description('Drop in photos now — no need to save the product first. Drag a thumbnail to reorder. For video or a hosted image URL, use the "Images" tab after saving.')
                             ->schema(self::imageFields()),
                         Section::make('Pricing & Inventory')
                             ->columns(2)
@@ -142,76 +139,69 @@ class ProductForm
     }
 
     /**
-     * Backed by the same `images` hasMany relationship as ImagesRelationManager (which only
-     * appears once the product record already exists) — this repeater lets an admin attach
-     * images in the same submission that creates the product, saved via Filament's standard
-     * relationship-repeater flow (parent record first, then these rows).
-     *
-     * Nothing in a row is required, so combineImageRowOrSkip() drops any row an admin added but
-     * left without an upload, URL, or video link, rather than blocking the save.
+     * A single multi-file upload rendered as a Shopify-style thumbnail grid: drop in several
+     * images at once, drag any thumbnail to reorder, hover to remove. Not tied to the `images`
+     * relationship directly (Filament's relationship-repeater needs one row per record, not a
+     * shared grid) — CreateProduct/EditProduct sync this field's ordered path list into `image`
+     * type ProductImage rows via ProductForm::syncImageGallery(). Video and hosted-URL images
+     * stay on the "Images" relation manager tab (post-save only), which this grid leaves alone.
      *
      * @return array<int, Component>
      */
     protected static function imageFields(): array
     {
         return [
-            FileUpload::make('bulk_images')
-                ->label('Bulk upload')
-                ->helperText('Drop in several images at once — each one is added below as its own row.')
+            FileUpload::make('image_gallery')
+                ->label('')
                 ->image()
                 ->multiple()
+                ->reorderable()
+                ->appendFiles()
+                ->panelLayout('grid')
+                ->imagePreviewHeight('160')
                 ->disk('public')
                 ->directory('products')
-                ->dehydrated(false)
-                ->live()
-                ->afterStateUpdated(function (?array $state, Set $set, Get $get) {
-                    if (blank($state)) {
-                        return;
-                    }
-
-                    $items = $get('images') ?? [];
-
-                    foreach ($state as $path) {
-                        $items[(string) Str::uuid()] = [
-                            'type' => 'image',
-                            'path' => $path,
-                            'path_url' => null,
-                            'alt' => null,
-                            'sort_order' => 0,
-                        ];
-                    }
-
-                    $set('images', $items);
-                    $set('bulk_images', null);
-                }),
-            Repeater::make('images')
-                ->label('')
-                ->relationship('images')
-                ->schema(ProductImageFields::make(requireMediaSource: false))
-                ->mutateRelationshipDataBeforeFillUsing(fn (array $data): array => ImageOrUrlField::split($data, 'path'))
-                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): ?array => self::combineImageRowOrSkip($data))
-                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): ?array => self::combineImageRowOrSkip($data))
-                ->orderColumn('sort_order')
-                ->columns(2)
-                ->addActionLabel('Add image')
-                ->collapsible()
                 ->columnSpanFull(),
         ];
     }
 
     /**
-     * Returns null (which Filament's repeater treats as "skip this row") when the row has no
-     * image upload, image URL, or video link — so an admin can add a blank image row without it
-     * blocking the save with a validation error or persisting an empty record.
+     * Reconciles the image_gallery field's ordered upload paths into `image` type ProductImage
+     * rows: existing rows matched by path keep their id (and alt text), new paths get created,
+     * and rows whose path dropped out of the list get deleted. Rows of other types (video,
+     * hosted URL) are untouched — they belong to the relation manager's advanced editing tab.
      *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>|null
+     * @param  array<int, string>  $paths
      */
-    private static function combineImageRowOrSkip(array $data): ?array
+    public static function syncImageGallery(Product $product, array $paths): void
     {
-        $data = ImageOrUrlField::combine($data, 'path');
+        $paths = array_values(array_filter($paths));
 
-        return blank($data['path'] ?? null) ? null : $data;
+        $existingByPath = $product->images()
+            ->where('type', 'image')
+            ->where('path', 'not like', 'http://%')
+            ->where('path', 'not like', 'https://%')
+            ->get()
+            ->keyBy('path');
+
+        foreach ($paths as $order => $path) {
+            if ($existingByPath->has($path)) {
+                $existingByPath->pull($path)->update(['sort_order' => $order]);
+
+                continue;
+            }
+
+            $product->images()->create([
+                'type' => 'image',
+                'path' => $path,
+                'sort_order' => $order,
+            ]);
+        }
+
+        // Whatever's left in $existingByPath wasn't in the new list — the admin removed it.
+        foreach ($existingByPath as $removedImage) {
+            $removedImage->delete();
+        }
     }
 
     /**
