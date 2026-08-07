@@ -6,7 +6,6 @@ use App\Filament\Support\ImageOrUrlField;
 use App\Filament\Support\ProductImageFields;
 use App\Models\Category;
 use App\Models\Product;
-use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -43,7 +42,6 @@ class ProductForm
                     ->schema(self::generalFields()),
                 Section::make('Images')
                     ->description('Add photos or videos now — no need to save the product first. Drag the handle to reorder.')
-                    ->headerActions([self::bulkUploadAction()])
                     ->schema(self::imageFields()),
                 Section::make('Pricing & Inventory')
                     ->columns(2)
@@ -183,6 +181,35 @@ class ProductForm
     protected static function imageFields(): array
     {
         return [
+            FileUpload::make('bulk_images')
+                ->label('Bulk upload')
+                ->helperText('Drop in several images at once — each one is added below as its own row.')
+                ->image()
+                ->multiple()
+                ->disk('public')
+                ->directory('products')
+                ->dehydrated(false)
+                ->live()
+                ->afterStateUpdated(function (?array $state, Set $set, Get $get) {
+                    if (blank($state)) {
+                        return;
+                    }
+
+                    $items = $get('images') ?? [];
+
+                    foreach ($state as $path) {
+                        $items[(string) Str::uuid()] = [
+                            'type' => 'image',
+                            'path' => $path,
+                            'path_url' => null,
+                            'alt' => null,
+                            'sort_order' => 0,
+                        ];
+                    }
+
+                    $set('images', $items);
+                    $set('bulk_images', null);
+                }),
             Repeater::make('images')
                 ->label('')
                 ->relationship('images')
@@ -196,44 +223,6 @@ class ProductForm
                 ->collapsible()
                 ->columnSpanFull(),
         ];
-    }
-
-    /**
-     * Header action on the Images section that lets an admin drop in several image files at
-     * once instead of clicking "Add image" and uploading them one row at a time — each uploaded
-     * file becomes its own row in the `images` repeater, appended after whatever's already there.
-     */
-    private static function bulkUploadAction(): Action
-    {
-        return Action::make('bulkUploadImages')
-            ->label('Bulk upload')
-            ->modalHeading('Bulk upload images')
-            ->modalSubmitActionLabel('Add images')
-            ->schema([
-                FileUpload::make('files')
-                    ->label('Images')
-                    ->image()
-                    ->multiple()
-                    ->disk('public')
-                    ->directory('products')
-                    ->reorderable()
-                    ->required(),
-            ])
-            ->action(function (array $data, Get $get, Set $set): void {
-                $items = $get('images') ?? [];
-
-                foreach ($data['files'] as $path) {
-                    $items[(string) Str::uuid()] = [
-                        'type' => 'image',
-                        'path' => $path,
-                        'path_url' => null,
-                        'alt' => null,
-                        'sort_order' => 0,
-                    ];
-                }
-
-                $set('images', $items);
-            });
     }
 
     /**
