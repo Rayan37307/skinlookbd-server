@@ -76,6 +76,15 @@ class ProductController extends Controller
 
         $this->syncRelations($request, $product);
 
+        if ($product->variants()->count() === 0) {
+            $product->variants()->create([
+                'sku' => ($product->sku ?: 'SLB-'.str_pad((string) $product->id, 4, '0', STR_PAD_LEFT)).'-STD',
+                'size_label' => 'Standard',
+                'price_override' => null,
+                'stock_quantity' => $product->stock_quantity ?? 0,
+            ]);
+        }
+
         return response()->json([
             'product' => new AdminProductResource($product->load(self::WITH)),
         ], 201);

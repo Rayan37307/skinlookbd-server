@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'github_deploy' => [
+        'token' => env('GITHUB_DEPLOY_TOKEN'),
+        'repo' => env('GITHUB_DEPLOY_REPO'),
+    ],
+
 ];

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Products\Pages;
 
 use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\Products\Schemas\ProductForm;
+use App\Services\FrontendDeployTrigger;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateProduct extends CreateRecord
@@ -33,5 +34,7 @@ class CreateProduct extends CreateRecord
     protected function afterCreate(): void
     {
         ProductForm::syncImageGallery($this->record, $this->pendingImageGallery);
+
+        app(FrontendDeployTrigger::class)->triggerNewProductDeploy();
     }
 }
