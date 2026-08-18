@@ -22,6 +22,7 @@ return [
     'allowed_origins' => [
         'https://skinlookbd.com',
         'https://www.skinlookbd.com',
+        'https://ssr.skinlookbd.com',
         'http://localhost:4321',
     ],
 
