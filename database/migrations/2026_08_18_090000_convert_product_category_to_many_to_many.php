@@ -40,8 +40,10 @@ return new class extends Migration
             });
 
         Schema::table('products', function (Blueprint $table) {
-            $table->dropIndex(['category_id', 'status']);
+            // MySQL refuses to drop the index while the FK still relies on it to enforce the
+            // constraint, so the FK has to go first, even though it reads a little backwards.
             $table->dropForeign(['category_id']);
+            $table->dropIndex(['category_id', 'status']);
             $table->dropColumn('category_id');
         });
     }
