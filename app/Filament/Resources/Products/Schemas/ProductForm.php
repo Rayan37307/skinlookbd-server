@@ -283,38 +283,20 @@ class ProductForm
     protected static function organizationFields(): array
     {
         return [
-            Select::make('category_group_id')
-                ->label('Category')
-                ->options(fn () => Category::whereNull('parent_id')->orderBy('name')->pluck('name', 'id'))
-                ->dehydrated(false)
-                ->live()
-                ->afterStateHydrated(function (Select $component, $record) {
-                    if ($record?->category) {
-                        $component->state($record->category->parent_id ?? $record->category->id);
-                    }
-                })
-                ->afterStateUpdated(fn (callable $set) => $set('category_id', null))
+            Select::make('categories')
+                ->label('Categories')
+                ->relationship(
+                    'categories',
+                    'name',
+                    fn ($query) => $query->with('parent')->orderByRaw('parent_id is not null')->orderBy('name'),
+                )
+                ->getOptionLabelFromRecordUsing(fn (Category $category) => $category->parent
+                    ? "{$category->name} ({$category->parent->name})"
+                    : $category->name)
+                ->multiple()
                 ->searchable()
-                ->extraAttributes(['style' => self::SELECT_STYLE]),
-            Select::make('category_id')
-                ->label('Subcategory')
-                ->options(function (callable $get) {
-                    $parentId = $get('category_group_id');
-
-                    if (! $parentId) {
-                        return [];
-                    }
-
-                    return Category::where('id', $parentId)
-                        ->orWhere('parent_id', $parentId)
-                        ->orderByRaw('parent_id is not null')
-                        ->orderBy('name')
-                        ->get()
-                        ->mapWithKeys(fn (Category $category) => [
-                            $category->id => $category->parent_id ? $category->name : "{$category->name} (General)",
-                        ]);
-                })
-                ->searchable()
+                ->preload()
+                ->helperText('A product can belong to as many categories as apply — none of them is "primary".')
                 ->extraAttributes(['style' => self::SELECT_STYLE]),
             Select::make('brand_id')
                 ->label('Brand')
@@ -465,17 +447,29 @@ class ProductForm
         }
 
         $data['base_price'] = $data['base_price'] ?? 0;
-
-        if (blank($data['category_id'] ?? null)) {
-            $data['category_id'] = Category::firstOrCreate(
-                ['slug' => 'uncategorized'],
-                ['name' => 'Uncategorized', 'is_active' => true],
-            )->id;
-        }
-
         $data['status'] = $data['status'] ?? 'draft';
 
         return $data;
+    }
+
+    /**
+     * The `categories` field is a real BelongsToMany relationship, so Filament syncs it itself
+     * after the record is saved — it never appears in applyFallbackDefaults()'s $data array.
+     * Call this from afterCreate()/afterSave() instead, once the sync has already happened, to
+     * fall back to "Uncategorized" only if the admin left the field completely empty.
+     */
+    public static function assignFallbackCategoryIfNone(Product $product): void
+    {
+        if ($product->categories()->exists()) {
+            return;
+        }
+
+        $uncategorized = Category::firstOrCreate(
+            ['slug' => 'uncategorized'],
+            ['name' => 'Uncategorized', 'is_active' => true],
+        );
+
+        $product->categories()->attach($uncategorized);
     }
 
     private static function uniqueSlug(string $base): string

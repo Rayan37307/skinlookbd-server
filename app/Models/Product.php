@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'category_id', 'brand_id', 'name', 'slug', 'sku', 'description', 'short_description', 'ingredients',
+    'brand_id', 'name', 'slug', 'sku', 'description', 'short_description', 'ingredients',
     'additional_information', 'base_price', 'sale_price', 'cost_price', 'status', 'track_inventory',
     'stock_quantity', 'free_shipping', 'meta_title', 'meta_description', 'focus_keyword', 'canonical_url',
 ])]
@@ -37,11 +37,16 @@ class Product extends Model
     }
 
     /**
-     * @return BelongsTo<Category, $this>
+     * A product can belong to any number of categories, spanning different top-level trees
+     * (e.g. both "Skincare > Cleansers" and "Haircare > Shampoo"), with none of them treated
+     * as primary. Callers that need a single representative category (a decorative flourish,
+     * a "related products" heuristic) should just take the first one.
+     *
+     * @return BelongsToMany<Category, $this>
      */
-    public function category(): BelongsTo
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class);
     }
 
     /**
@@ -129,24 +134,6 @@ class Product extends Model
         }
 
         return ! $this->track_inventory || $this->stock_quantity > 0;
-    }
-
-    /**
-     * The top-level category, resolved from the assigned category's parent when it's a subcategory.
-     * Assumes `category.parent` is eager loaded.
-     */
-    public function topCategory(): Category
-    {
-        return $this->category->parent_id ? $this->category->parent : $this->category;
-    }
-
-    /**
-     * The specific subcategory, or null if the assigned category has no parent.
-     * Assumes `category.parent` is eager loaded.
-     */
-    public function subcategoryOrNull(): ?Category
-    {
-        return $this->category->parent_id ? $this->category : null;
     }
 
     /**

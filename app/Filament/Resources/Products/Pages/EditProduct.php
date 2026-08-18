@@ -63,5 +63,6 @@ class EditProduct extends EditRecord
     protected function afterSave(): void
     {
         ProductForm::syncImageGallery($this->record, $this->pendingImageGallery);
+        ProductForm::assignFallbackCategoryIfNone($this->record);
     }
 }

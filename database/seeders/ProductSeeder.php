@@ -38,7 +38,6 @@ class ProductSeeder extends Seeder
                 );
 
                 $product = Product::create([
-                    'category_id' => $category->id,
                     'brand_id' => $brand->id,
                     'name' => $data['name'],
                     'slug' => Str::slug($data['name']),
@@ -60,6 +59,8 @@ class ProductSeeder extends Seeder
                     'meta_description' => $data['short_description'],
                     'focus_keyword' => Str::lower($data['name']),
                 ]);
+
+                $product->categories()->attach($category->id);
 
                 $product->images()->createMany([
                     ['type' => 'image', 'path' => 'products/'.$product->slug.'-1.jpg', 'alt' => $data['name'], 'sort_order' => 0],

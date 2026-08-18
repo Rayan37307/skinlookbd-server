@@ -37,7 +37,7 @@ test('a category cannot be made its own parent', function () {
 test('a category with products cannot be deleted', function () {
     actingAsAdmin('catalog-manager');
     $category = Category::factory()->create();
-    Product::factory()->for($category)->create();
+    Product::factory()->hasAttached($category)->create();
 
     $this->deleteJson("/api/v1/admin/categories/{$category->id}")->assertUnprocessable();
 });

@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
  */
 class ProductController extends Controller
 {
-    private const WITH = ['category.parent', 'brand', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts'];
+    private const WITH = ['categories.parent', 'brand', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts'];
 
     /**
      * List all products
@@ -37,7 +37,7 @@ class ProductController extends Controller
         }
 
         if ($categoryId = $request->integer('category_id')) {
-            $query->where('category_id', $categoryId);
+            $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
         }
 
         if ($brandId = $request->integer('brand_id')) {
@@ -69,7 +69,7 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request): JsonResponse
     {
         $product = Product::create([
-            ...$request->safe()->except(['skin_type_ids', 'tag_ids', 'label_ids', 'related_product_ids']),
+            ...$request->safe()->except(['category_ids', 'skin_type_ids', 'tag_ids', 'label_ids', 'related_product_ids']),
             'slug' => $request->string('slug')->value() ?: Str::slug($request->string('name')->value()),
             'status' => $request->string('status')->value() ?: 'draft',
         ]);
@@ -105,7 +105,7 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
-        $product->update($request->safe()->except(['skin_type_ids', 'tag_ids', 'label_ids', 'related_product_ids']));
+        $product->update($request->safe()->except(['category_ids', 'skin_type_ids', 'tag_ids', 'label_ids', 'related_product_ids']));
 
         $this->syncRelations($request, $product);
 
@@ -119,6 +119,10 @@ class ProductController extends Controller
      */
     protected function syncRelations($request, Product $product): void
     {
+        if ($request->has('category_ids')) {
+            $product->categories()->sync($request->input('category_ids'));
+        }
+
         if ($request->has('skin_type_ids')) {
             $product->skinTypes()->sync($request->input('skin_type_ids'));
         }

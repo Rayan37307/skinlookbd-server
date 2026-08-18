@@ -20,7 +20,7 @@ test('a catalog manager can create a product with skin types', function () {
     $skinType = SkinType::factory()->create();
 
     $response = $this->postJson('/api/v1/admin/products', [
-        'category_id' => $category->id,
+        'category_ids' => [$category->id],
         'name' => 'Niacinamide Serum',
         'base_price' => 500,
         'skin_type_ids' => [$skinType->id],
@@ -30,6 +30,7 @@ test('a catalog manager can create a product with skin types', function () {
         ->assertJsonPath('product.slug', 'niacinamide-serum')
         ->assertJsonPath('product.status', 'draft');
     expect($response->json('product.skin_types'))->toContain($skinType->name);
+    expect($response->json('product.categories.0.name'))->toBe($category->name);
 });
 
 test('an admin can see products of any status', function () {
