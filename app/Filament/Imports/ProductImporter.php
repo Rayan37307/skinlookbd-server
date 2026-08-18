@@ -120,8 +120,6 @@ class ProductImporter extends Importer
         $salePrice = $salePrice !== null ? (int) $salePrice : null;
         $record->sale_price = ($salePrice !== null && $salePrice < $regularPrice) ? $salePrice : null;
 
-        $record->category_id = $this->resolveCategoryId((string) ($this->data['category_path'] ?? ''));
-
         if (! $record->sku) {
             $sourceId = $this->data['sku_source'] ?? null;
             $record->sku = 'SLB-'.str_pad((string) ($sourceId ?: random_int(10000, 99999)), 5, '0', STR_PAD_LEFT);
@@ -135,6 +133,8 @@ class ProductImporter extends Importer
     protected function afterSave(): void
     {
         $record = $this->getRecord();
+
+        $record->categories()->sync($this->resolveCategoryIds((string) ($this->data['category_path'] ?? '')));
 
         $record->images()->delete();
 
@@ -165,18 +165,20 @@ class ProductImporter extends Importer
     }
 
     /**
-     * Resolves (creating if needed) a 2-level category from a raw, often messy,
-     * pipe-separated list of ">"-delimited category paths (WooCommerce export format).
-     * Picks the most specific path, flattens anything deeper than 2 levels by using
-     * the first segment as the top-level category and the last as the subcategory.
+     * Resolves (creating if needed) a 2-level category from each raw, often messy,
+     * pipe-separated list of ">"-delimited category paths (WooCommerce export format), and
+     * returns every path's resolved category id — a product can end up in several categories
+     * from a single import row. Flattens anything deeper than 2 levels per path by using its
+     * first segment as the top-level category and its last as the subcategory.
+     *
+     * @return array<int, int>
      */
-    private function resolveCategoryId(string $raw): int
+    private function resolveCategoryIds(string $raw): array
     {
         $raw = trim($raw);
         $paths = array_filter(array_map('trim', explode('|', $raw)));
 
-        $best = ['Uncategorized'];
-        $bestCount = -1;
+        $ids = [];
 
         foreach ($paths ?: ['Uncategorized'] as $path) {
             $segments = array_values(array_filter(array_map('trim', explode('>', $path))));
@@ -185,30 +187,36 @@ class ProductImporter extends Importer
                 continue;
             }
 
-            if (count($segments) > $bestCount) {
-                $best = $segments;
-                $bestCount = count($segments);
+            $topName = $segments[0];
+            $subName = count($segments) > 1 ? end($segments) : null;
+
+            $top = Category::firstOrCreate(
+                ['slug' => Str::slug($topName)],
+                ['name' => $topName, 'is_active' => true],
+            );
+
+            if ($subName === null || $subName === $topName) {
+                $ids[] = $top->id;
+
+                continue;
             }
+
+            $sub = Category::firstOrCreate(
+                ['slug' => Str::slug("{$topName} {$subName}")],
+                ['name' => $subName, 'parent_id' => $top->id, 'is_active' => true],
+            );
+
+            $ids[] = $sub->id;
         }
 
-        $topName = $best[0];
-        $subName = count($best) > 1 ? end($best) : null;
-
-        $top = Category::firstOrCreate(
-            ['slug' => Str::slug($topName)],
-            ['name' => $topName, 'is_active' => true],
-        );
-
-        if ($subName === null || $subName === $topName) {
-            return $top->id;
+        if ($ids === []) {
+            $ids[] = Category::firstOrCreate(
+                ['slug' => 'uncategorized'],
+                ['name' => 'Uncategorized', 'is_active' => true],
+            )->id;
         }
 
-        $sub = Category::firstOrCreate(
-            ['slug' => Str::slug("{$topName} {$subName}")],
-            ['name' => $subName, 'parent_id' => $top->id, 'is_active' => true],
-        );
-
-        return $sub->id;
+        return array_values(array_unique($ids));
     }
 
     /**

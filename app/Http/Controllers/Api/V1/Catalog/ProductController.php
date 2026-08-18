@@ -47,7 +47,7 @@ class ProductController extends Controller
 
     private function buildQuery(ProductIndexRequest $request, bool $forceLikeSearch = false): Builder
     {
-        $query = Product::active()->with(['category.parent', 'brand', 'images', 'variants', 'tags', 'labels']);
+        $query = Product::active()->with(['categories.parent', 'brand', 'images', 'variants', 'tags', 'labels']);
 
         if ($category = $request->string('category')->value()) {
             $matchedCategory = Category::where('slug', $category)->first();
@@ -56,11 +56,11 @@ class ProductController extends Controller
                 ? Category::where('id', $matchedCategory->id)->orWhere('parent_id', $matchedCategory->id)->pluck('id')
                 : collect();
 
-            $query->whereIn('category_id', $categoryIds);
+            $query->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds));
         }
 
         if ($subcategory = $request->string('subcategory')->value()) {
-            $query->whereHas('category', fn ($q) => $q->where('slug', $subcategory));
+            $query->whereHas('categories', fn ($q) => $q->where('slug', $subcategory));
         }
 
         if ($skinType = $request->string('skin_type')->value()) {
@@ -79,7 +79,7 @@ class ProductController extends Controller
                     ->orWhere('parent_id', $matchedConcern->category_id)
                     ->pluck('id');
 
-                $query->whereIn('category_id', $categoryIds);
+                $query->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds));
             } elseif ($matchedConcern?->tag_id) {
                 $query->whereHas('tags', fn ($q) => $q->where('id', $matchedConcern->tag_id));
             } else {
@@ -166,7 +166,7 @@ class ProductController extends Controller
     public function show(string $slug): JsonResponse
     {
         $product = Product::active()
-            ->with(['category.parent', 'brand', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts.category.parent', 'relatedProducts.brand', 'relatedProducts.variants', 'relatedProducts.images'])
+            ->with(['categories.parent', 'brand', 'images', 'variants', 'skinTypes', 'tags', 'labels', 'relatedProducts.categories.parent', 'relatedProducts.brand', 'relatedProducts.variants', 'relatedProducts.images'])
             ->where('slug', $slug)
             ->firstOrFail();
 

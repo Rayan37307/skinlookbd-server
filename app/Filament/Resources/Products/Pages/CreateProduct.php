@@ -34,6 +34,7 @@ class CreateProduct extends CreateRecord
     protected function afterCreate(): void
     {
         ProductForm::syncImageGallery($this->record, $this->pendingImageGallery);
+        ProductForm::assignFallbackCategoryIfNone($this->record);
 
         app(FrontendDeployTrigger::class)->triggerNewProductDeploy();
     }

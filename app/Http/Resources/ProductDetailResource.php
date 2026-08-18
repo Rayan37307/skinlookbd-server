@@ -34,16 +34,16 @@ class ProductDetailResource extends JsonResource
             'is_on_sale' => $this->isOnSale(),
             'free_shipping' => $this->free_shipping,
             'in_stock' => $this->whenLoaded('variants', fn () => $this->isInStock()),
-            'category' => $this->whenLoaded('category', fn () => [
-                'id' => $this->topCategory()->id,
-                'name' => $this->topCategory()->name,
-                'slug' => $this->topCategory()->slug,
-            ]),
-            'subcategory' => $this->whenLoaded('category', fn () => $this->subcategoryOrNull() ? [
-                'id' => $this->subcategoryOrNull()->id,
-                'name' => $this->subcategoryOrNull()->name,
-                'slug' => $this->subcategoryOrNull()->slug,
-            ] : null),
+            'categories' => $this->whenLoaded('categories', fn () => $this->categories->map(fn ($category) => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'parent' => $category->parent ? [
+                    'id' => $category->parent->id,
+                    'name' => $category->parent->name,
+                    'slug' => $category->parent->slug,
+                ] : null,
+            ])),
             'skin_types' => $this->whenLoaded('skinTypes', fn () => $this->skinTypes->pluck('name')),
             'tags' => $this->whenLoaded('tags', fn () => $this->tags->pluck('name')),
             'labels' => $this->whenLoaded('labels', fn () => $this->labels->map(fn ($label) => [

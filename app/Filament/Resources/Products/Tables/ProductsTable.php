@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
-use App\Models\Category;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -24,12 +23,9 @@ class ProductsTable
     {
         return $table
             ->columns([
-                TextColumn::make('category.parent.name')
-                    ->label('Category')
-                    ->getStateUsing(fn ($record) => ($record->category?->parent ?? $record->category)?->name)
-                    ->searchable(),
-                TextColumn::make('category.name')
-                    ->label('Subcategory')
+                TextColumn::make('categories.name')
+                    ->label('Categories')
+                    ->badge()
                     ->searchable(),
                 TextColumn::make('name')
                     ->searchable(),
@@ -78,9 +74,11 @@ class ProductsTable
                         'active' => 'Active',
                         'archived' => 'Archived',
                     ]),
-                SelectFilter::make('category_id')
+                SelectFilter::make('categories')
                     ->label('Category')
-                    ->options(fn () => Category::query()->orderBy('name')->pluck('name', 'id')),
+                    ->relationship('categories', 'name')
+                    ->multiple()
+                    ->searchable(),
                 SelectFilter::make('brand_id')
                     ->label('Brand')
                     ->relationship('brand', 'name')

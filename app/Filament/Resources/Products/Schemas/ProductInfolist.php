@@ -13,11 +13,10 @@ class ProductInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('category.parent.name')
-                    ->label('Category')
-                    ->getStateUsing(fn ($record) => ($record->category?->parent ?? $record->category)?->name),
-                TextEntry::make('category.name')
-                    ->label('Subcategory'),
+                TextEntry::make('categories.name')
+                    ->label('Categories')
+                    ->badge()
+                    ->placeholder('-'),
                 TextEntry::make('name'),
                 TextEntry::make('slug'),
                 TextEntry::make('sku')

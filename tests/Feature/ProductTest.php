@@ -23,9 +23,9 @@ test('it filters products by category including its children', function () {
     $child = Category::factory()->create(['parent_id' => $parent->id]);
     $other = Category::factory()->create();
 
-    Product::factory()->for($parent)->create();
-    Product::factory()->for($child)->create();
-    Product::factory()->for($other)->create();
+    Product::factory()->hasAttached($parent)->create();
+    Product::factory()->hasAttached($child)->create();
+    Product::factory()->hasAttached($other)->create();
 
     $response = $this->getJson("/api/v1/products?category={$parent->slug}");
 
@@ -39,9 +39,9 @@ test('it filters products by a concern linked to a category, including children'
     $other = Category::factory()->create();
     $concern = Concern::factory()->create(['category_id' => $parent->id]);
 
-    Product::factory()->for($parent)->create();
-    Product::factory()->for($child)->create();
-    Product::factory()->for($other)->create();
+    Product::factory()->hasAttached($parent)->create();
+    Product::factory()->hasAttached($child)->create();
+    Product::factory()->hasAttached($other)->create();
 
     $response = $this->getJson("/api/v1/products?concern={$concern->slug}");
 
