@@ -26,6 +26,12 @@ class Order extends Model
     public const CANCELLABLE_STATUSES = ['pending', 'confirmed'];
 
     /**
+     * Orders that will never restock their items again; their order items keep
+     * working as snapshots without the live product rows.
+     */
+    public const SETTLED_STATUSES = ['cancelled', 'returned'];
+
+    /**
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo

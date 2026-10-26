@@ -7,7 +7,6 @@ use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Http\Resources\AdminProductResource;
 use App\Models\Product;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -143,15 +142,16 @@ class ProductController extends Controller
     /**
      * Delete a product
      *
-     * Fails with a 422 if the product has existing orders.
+     * Fails with a 422 while the product is referenced by orders that can still
+     * restock it; cancelled/returned orders do not block deletion.
      */
     public function destroy(Product $product): JsonResponse
     {
-        try {
-            $product->delete();
-        } catch (QueryException) {
-            abort(422, 'This product cannot be deleted while it has existing orders.');
+        if ($product->hasActiveOrders()) {
+            abort(422, 'This product cannot be deleted while it has active orders.');
         }
+
+        $product->delete();
 
         return response()->json(['message' => 'Product deleted.']);
     }

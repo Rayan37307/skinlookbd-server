@@ -26,6 +26,7 @@ class ShippingEstimateRequest extends FormRequest
     {
         return [
             'city' => ['required', 'string', Rule::in(ShippingService::validCities())],
+            'subtotal' => ['nullable', 'integer', 'min:0'],
         ];
     }
 }

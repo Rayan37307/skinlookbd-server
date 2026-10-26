@@ -12,6 +12,8 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\CouponService;
+use App\Services\MetaCapi;
 use App\Services\ShippingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +32,9 @@ class CheckoutController extends Controller
 {
     public function __construct(
         private readonly CartService $carts,
+        private readonly CouponService $coupons,
         private readonly ShippingService $shipping,
+        private readonly MetaCapi $meta,
     ) {}
 
     /**
@@ -38,7 +42,8 @@ class CheckoutController extends Controller
      *
      * Validates stock, applies an optional coupon, computes the shipping charge, and
      * atomically creates the order, order items, and payment record, decrementing variant
-     * stock and clearing the cart.
+     * stock and clearing the cart. Eligible automatic promotions are applied without a code,
+     * and a free-delivery coupon waives the shipping charge.
      */
     public function store(CheckoutRequest $request): JsonResponse
     {
@@ -61,27 +66,47 @@ class CheckoutController extends Controller
 
         $subtotal = $cart->items->sum(fn ($item) => $item->productVariant->price * $item->quantity);
 
-        $coupon = null;
-        $discountTotal = 0;
+        $appliedCoupons = [];
 
         if ($code = $request->string('coupon_code')->upper()->value()) {
-            $coupon = Coupon::where('code', $code)->first();
+            $coupon = Coupon::where('code', $code)->where('method', 'code')->first();
 
-            abort_if(! $coupon || ! $coupon->isRedeemableBy($user, $subtotal), 422, 'This coupon cannot be applied to your order.');
+            $application = $coupon ? $this->coupons->evaluate($coupon, $cart->items, $user) : null;
 
-            $discountTotal = $coupon->calculateDiscount($subtotal);
+            abort_if(! $application, 422, 'This coupon cannot be applied to your order.');
+
+            $appliedCoupons[] = ['coupon' => $coupon, 'application' => $application];
         }
 
-        $shipping = $this->shipping->calculate($shippingDetails['shipping_city']);
-        $shippingCharge = $shipping['charge'];
+        $automatic = $this->coupons->findAutomatic($cart->items, $user);
+
+        if ($automatic && $this->canCombine($appliedCoupons, $automatic['coupon'])) {
+            $appliedCoupons[] = $automatic;
+        }
+
+        $discountTotal = min(
+            $subtotal,
+            array_sum(array_map(
+                fn (array $applied): int => $applied['application']['discount'],
+                $appliedCoupons,
+            )),
+        );
+
+        $freeDelivery = collect($appliedCoupons)
+            ->contains(fn (array $applied): bool => $applied['application']['free_delivery']);
+
+        $primaryCoupon = $appliedCoupons[0]['coupon'] ?? null;
+
+        $shipping = $this->shipping->calculate($shippingDetails['shipping_city'], $subtotal);
+        $shippingCharge = $freeDelivery ? 0 : $shipping['charge'];
 
         $total = max(0, $subtotal - $discountTotal) + $shippingCharge;
 
-        $order = DB::transaction(function () use ($request, $user, $cart, $shippingDetails, $coupon, $subtotal, $discountTotal, $shippingCharge, $total) {
+        $order = DB::transaction(function () use ($request, $user, $cart, $shippingDetails, $primaryCoupon, $appliedCoupons, $subtotal, $discountTotal, $shippingCharge, $total) {
             $order = Order::create([
                 'order_number' => Order::generateOrderNumber(),
                 'user_id' => $user?->id,
-                'coupon_id' => $coupon?->id,
+                'coupon_id' => $primaryCoupon?->id,
                 'status' => 'pending',
                 'payment_method' => $request->string('payment_method')->value(),
                 'subtotal' => $subtotal,
@@ -117,8 +142,8 @@ class CheckoutController extends Controller
                 $log->save();
             }
 
-            if ($coupon) {
-                $coupon->usages()->create(['user_id' => $user?->id, 'order_id' => $order->id]);
+            foreach ($appliedCoupons as $applied) {
+                $applied['coupon']->usages()->create(['user_id' => $user?->id, 'order_id' => $order->id]);
             }
 
             Payment::create([
@@ -133,9 +158,26 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        $this->meta->sendPurchase($order->load('items'));
+
         return response()->json([
             'order' => new OrderResource($order->load('items')),
         ], 201);
+    }
+
+    /**
+     * An automatic promotion only stacks on top of a code coupon when both allow combination.
+     * When no code coupon was entered, the first eligible automatic promotion always applies.
+     *
+     * @param  array<int, array{coupon: Coupon, application: array{subtotal: int, eligible_subtotal: int, discount: int, free_delivery: bool}}>  $appliedCoupons
+     */
+    private function canCombine(array $appliedCoupons, Coupon $automatic): bool
+    {
+        if ($appliedCoupons === []) {
+            return true;
+        }
+
+        return $appliedCoupons[0]['coupon']->allow_combination && $automatic->allow_combination;
     }
 
     /**

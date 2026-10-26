@@ -117,7 +117,15 @@ class ProductController extends Controller
             'price_asc' => $query->orderBy('base_price'),
             'price_desc' => $query->orderByDesc('base_price'),
             'newest' => $query->orderByDesc('created_at'),
-            default => $query->orderBy('name'),
+            // Random browsing order, but keep purchasable products first: anything with no
+            // stock (variant-aware, same rule as scopeInStock) sinks to the end as leftovers.
+            default => $query
+                ->orderByDesc(DB::raw(
+                    '(case when exists (select 1 from product_variants pv where pv.product_id = products.id and pv.stock_quantity > 0) then 1'
+                    .' when not exists (select 1 from product_variants pv where pv.product_id = products.id) and (products.track_inventory = 0 or products.stock_quantity > 0) then 1'
+                    .' else 0 end)'
+                ))
+                ->inRandomOrder(),
         };
 
         return $query;

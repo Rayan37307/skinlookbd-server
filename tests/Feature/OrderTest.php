@@ -36,6 +36,16 @@ test('a user can cancel a pending order and stock is restored', function () {
     expect($variant->fresh()->stock_quantity)->toBe(8);
 });
 
+test('cancelling an order with unlinked items skips the missing variant', function () {
+    $user = actingAsUser();
+    $order = Order::factory()->for($user)->create(['status' => 'pending']);
+    OrderItem::factory()->for($order)->create(['product_variant_id' => null, 'quantity' => 3]);
+
+    $response = $this->postJson("/api/v1/orders/{$order->id}/cancel");
+
+    $response->assertOk()->assertJsonPath('order.status', 'cancelled');
+});
+
 test('a shipped order cannot be cancelled', function () {
     $user = actingAsUser();
     $order = Order::factory()->for($user)->create(['status' => 'shipped']);

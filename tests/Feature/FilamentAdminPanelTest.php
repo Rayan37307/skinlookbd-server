@@ -53,7 +53,10 @@ test('a super admin can view coupons, banners, and reviews pages', function () {
     $review = Review::factory()->create();
 
     $this->get('/admin/coupons')->assertOk();
+    $this->get('/admin/coupons/create')->assertOk();
     $this->get("/admin/coupons/{$coupon->id}")->assertOk();
+    $this->get("/admin/coupons/{$coupon->id}/edit")->assertOk();
+    $this->get('/admin/delivery-settings')->assertOk();
 
     $this->get('/admin/banners')->assertOk();
     $this->get("/admin/banners/{$banner->id}")->assertOk();

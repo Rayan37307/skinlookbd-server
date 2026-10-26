@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -91,10 +92,38 @@ test('an admin can delete a product image', function () {
     expect($product->images()->count())->toBe(0);
 });
 
-test('a product with existing orders cannot be deleted', function () {
+test('a product with active orders cannot be deleted', function () {
     actingAsAdmin('catalog-manager');
     $product = Product::factory()->create();
     OrderItem::factory()->create(['product_id' => $product->id]);
 
     $this->deleteJson("/api/v1/admin/products/{$product->id}")->assertUnprocessable();
+});
+
+test('a product whose orders are all cancelled can be deleted', function () {
+    actingAsAdmin('catalog-manager');
+    $product = Product::factory()->create();
+    $order = Order::factory()->create(['status' => 'cancelled']);
+    $item = OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $product->id]);
+
+    $this->deleteJson("/api/v1/admin/products/{$product->id}")->assertOk();
+
+    expect(Product::find($product->id))->toBeNull();
+    expect($item->fresh()->product_id)->toBeNull();
+    expect($item->fresh()->product_name)->not->toBeNull();
+});
+
+test('a variant whose orders are all cancelled can be deleted', function () {
+    actingAsAdmin('catalog-manager');
+    $variant = ProductVariant::factory()->create();
+    $order = Order::factory()->create(['status' => 'cancelled']);
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'product_id' => $variant->product_id,
+        'product_variant_id' => $variant->id,
+    ]);
+
+    $this->deleteJson("/api/v1/admin/variants/{$variant->id}")->assertOk();
+
+    expect(ProductVariant::find($variant->id))->toBeNull();
 });

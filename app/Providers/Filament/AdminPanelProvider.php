@@ -58,6 +58,9 @@ class AdminPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedCube),
                 NavigationGroup::make('Promotions')
                     ->icon(Heroicon::OutlinedTag),
+                NavigationGroup::make('Settings')
+                    ->icon(Heroicon::OutlinedCog6Tooth)
+                    ->collapsed(),
                 NavigationGroup::make('Reviews')
                     ->icon(Heroicon::OutlinedStar),
                 NavigationGroup::make('Appearance')

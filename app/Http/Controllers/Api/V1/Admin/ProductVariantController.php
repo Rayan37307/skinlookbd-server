@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\UpdateProductVariantRequest;
 use App\Http\Resources\ProductVariantResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -46,15 +45,16 @@ class ProductVariantController extends Controller
     /**
      * Delete a variant
      *
-     * Fails with a 422 if the variant has existing orders.
+     * Fails with a 422 while the variant is referenced by orders that can still
+     * restock it; cancelled/returned orders do not block deletion.
      */
     public function destroy(ProductVariant $variant): JsonResponse
     {
-        try {
-            $variant->delete();
-        } catch (QueryException) {
-            abort(422, 'This variant cannot be deleted while it has existing orders.');
+        if ($variant->hasActiveOrders()) {
+            abort(422, 'This variant cannot be deleted while it has active orders.');
         }
+
+        $variant->delete();
 
         return response()->json(['message' => 'Variant deleted.']);
     }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\RelationManagers;
 
 use App\Models\InventoryLog;
+use App\Models\ProductVariant;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -19,7 +20,6 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\QueryException;
 
 class VariantsRelationManager extends RelationManager
 {
@@ -139,25 +139,39 @@ class VariantsRelationManager extends RelationManager
                             ->prefix('৳'),
                     ]),
                 DeleteAction::make()
-                    ->action(function (Model $record, DeleteAction $action) {
-                        try {
-                            $record->delete();
-                        } catch (QueryException) {
+                    ->action(function (ProductVariant $record, DeleteAction $action) {
+                        if ($record->hasActiveOrders()) {
                             Notification::make()
                                 ->danger()
                                 ->title('Cannot delete variant')
-                                ->body('This variant has existing orders.')
+                                ->body('This variant has active orders and cannot be deleted.')
                                 ->send();
 
                             return;
                         }
 
+                        $record->delete();
                         $action->success();
                     }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->action(function ($records, DeleteBulkAction $action) {
+                            $deletable = $records->reject(fn (ProductVariant $record) => $record->hasActiveOrders());
+                            $blockedCount = $records->count() - $deletable->count();
+
+                            if ($blockedCount > 0) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title('Some variants were not deleted')
+                                    ->body("{$blockedCount} variant(s) have active orders and cannot be deleted.")
+                                    ->send();
+                            }
+
+                            $deletable->each->delete();
+                            $action->success();
+                        }),
                 ]),
             ]);
     }

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\ShippingZone;
+use App\Services\ShippingService;
 use Illuminate\Database\Seeder;
 
 class ShippingZoneSeeder extends Seeder
@@ -12,14 +13,16 @@ class ShippingZoneSeeder extends Seeder
      */
     public function run(): void
     {
-        $zones = [
-            'Dhaka Metro' => ['areas' => ['Dhaka'], 'charge' => 60, 'eta_days' => 2],
-            'Chittagong' => ['areas' => ['Chittagong', 'Chattogram'], 'charge' => 100, 'eta_days' => 4],
-        ];
+        foreach (ShippingService::DEFAULT_ZONES as $config) {
+            $zone = ShippingZone::firstOrCreate(
+                ['name' => $config['name']],
+                ['areas' => $config['areas']],
+            );
 
-        foreach ($zones as $name => $config) {
-            ShippingZone::create(['name' => $name, 'areas' => $config['areas']])
-                ->rate()->create(['charge' => $config['charge'], 'eta_days' => $config['eta_days']]);
+            $zone->rate()->firstOrCreate([], [
+                'charge' => $config['charge'],
+                'eta_days' => $config['eta_days'],
+            ]);
         }
     }
 }

@@ -75,6 +75,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('coupons/validate', [CouponController::class, 'validateCoupon'])
         ->name('coupons.validate');
 
+    Route::get('cart/automatic-coupon', [CouponController::class, 'automaticCoupon'])
+        ->name('cart.automatic-coupon');
+
     Route::get('shipping/estimate', ShippingEstimateController::class)->name('shipping.estimate');
 
     // Works for both guests (X-Cart-Token) and authenticated customers (Sanctum bearer

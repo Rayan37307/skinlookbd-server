@@ -137,11 +137,31 @@ class Product extends Model
     }
 
     /**
+     * True while any order referencing this product can still restock it.
+     * Settled orders (cancelled/returned) never touch stock again, so they do
+     * not block deletion.
+     */
+    public function hasActiveOrders(): bool
+    {
+        return $this->orderItems()
+            ->whereHas('order', fn (Builder $query) => $query->whereNotIn('status', Order::SETTLED_STATUSES))
+            ->exists();
+    }
+
+    /**
      * @return HasMany<Review, $this>
      */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
     }
 
     /**

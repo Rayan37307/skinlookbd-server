@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
+use App\Models\Product;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -15,7 +16,6 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\QueryException;
 
 class ProductsTable
 {
@@ -105,24 +105,38 @@ class ProductsTable
                 EditAction::make(),
                 DeleteAction::make()
                     ->action(function ($record, DeleteAction $action) {
-                        try {
-                            $record->delete();
-                        } catch (QueryException) {
+                        if ($record->hasActiveOrders()) {
                             Notification::make()
                                 ->danger()
                                 ->title('Cannot delete product')
-                                ->body('This product has existing orders.')
+                                ->body('This product has active orders and cannot be deleted.')
                                 ->send();
 
                             return;
                         }
 
+                        $record->delete();
                         $action->success();
                     }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->action(function ($records, DeleteBulkAction $action) {
+                            $deletable = $records->reject(fn (Product $record) => $record->hasActiveOrders());
+                            $blockedCount = $records->count() - $deletable->count();
+
+                            if ($blockedCount > 0) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title('Some products were not deleted')
+                                    ->body("{$blockedCount} product(s) have active orders and cannot be deleted.")
+                                    ->send();
+                            }
+
+                            $deletable->each->delete();
+                            $action->success();
+                        }),
                 ]),
             ]);
     }
